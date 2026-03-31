@@ -7,443 +7,99 @@
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --green: #00ff41;
-      --green-dim: #00aa2a;
-      --green-faint: #003d0f;
-      --green-glow: rgba(0,255,65,0.15);
-      --bg: #050a05;
-      --surface: #080e08;
-      --surface2: #0d160d;
-      --border: rgba(0,255,65,0.2);
-      --border-bright: rgba(0,255,65,0.5);
-      --red: #ff3333;
-      --yellow: #ffcc00;
-      --blue: #00ccff;
-      --text: #00ff41;
-      --text-dim: #00aa2a;
-      --text-faint: #005515;
+      --green: #00ff41; --green-dim: #00aa2a; --green-faint: #003d0f;
+      --green-glow: rgba(0,255,65,0.15); --bg: #050a05; --surface: #080e08;
+      --surface2: #0d160d; --border: rgba(0,255,65,0.2); --border-bright: rgba(0,255,65,0.5);
+      --red: #ff3333; --yellow: #ffcc00; --blue: #00ccff;
+      --text: #00ff41; --text-dim: #00aa2a; --text-faint: #005515;
     }
-
     html, body { height: 100%; }
+    body { background: var(--bg); color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 13px; overflow-x: hidden; cursor: crosshair; }
+    body::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px); pointer-events: none; z-index: 1000; }
+    body::after { content: ''; position: fixed; inset: 0; background: rgba(0,255,65,0.012); pointer-events: none; z-index: 999; animation: flicker 8s infinite; }
+    @keyframes flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.85} 94%{opacity:1} 96%{opacity:0.9} 97%{opacity:1} }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 13px;
-      overflow-x: hidden;
-      cursor: crosshair;
-    }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 1rem; display: grid; grid-template-rows: auto 1fr auto; min-height: 100vh; gap: 1rem; }
 
-    /* scanline overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.08) 2px,
-        rgba(0,0,0,0.08) 4px
-      );
-      pointer-events: none;
-      z-index: 1000;
-    }
-
-    /* flicker */
-    body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: rgba(0,255,65,0.012);
-      pointer-events: none;
-      z-index: 999;
-      animation: flicker 8s infinite;
-    }
-
-    @keyframes flicker {
-      0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:0.85} 94%{opacity:1} 96%{opacity:0.9} 97%{opacity:1}
-    }
-
-    /* ── LAYOUT ── */
-    .shell {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 1rem;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: 100vh;
-      gap: 1rem;
-    }
-
-    /* ── HEADER ── */
-    .header {
-      border: 1px solid var(--border-bright);
-      padding: 0.75rem 1.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--surface);
-      box-shadow: 0 0 20px var(--green-glow), inset 0 0 20px rgba(0,255,65,0.03);
-    }
-
-    .logo {
-      font-family: 'VT323', monospace;
-      font-size: 28px;
-      letter-spacing: 3px;
-      text-shadow: 0 0 10px var(--green);
-    }
-
+    .header { border: 1px solid var(--border-bright); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; background: var(--surface); box-shadow: 0 0 20px var(--green-glow), inset 0 0 20px rgba(0,255,65,0.03); }
+    .logo { font-family: 'VT323', monospace; font-size: 28px; letter-spacing: 3px; text-shadow: 0 0 10px var(--green); }
     .logo span { color: var(--yellow); text-shadow: 0 0 10px var(--yellow); }
-
-    .header-stats {
-      display: flex;
-      gap: 2rem;
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
+    .header-stats { display: flex; gap: 2rem; font-size: 11px; color: var(--text-dim); }
     .header-stats strong { color: var(--green); font-size: 13px; }
 
-    /* ── MAIN GRID ── */
-    .main {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 1rem;
-    }
+    .main { display: grid; grid-template-columns: 1fr 340px; gap: 1rem; }
 
-    /* ── PANEL ── */
-    .panel {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      padding: 1rem;
-      position: relative;
-    }
-
-    .panel::before {
-      content: attr(data-title);
-      position: absolute;
-      top: -1px;
-      left: 12px;
-      background: var(--bg);
-      padding: 0 6px;
-      font-size: 10px;
-      letter-spacing: 2px;
-      color: var(--text-dim);
-      text-transform: uppercase;
-    }
-
+    .panel { border: 1px solid var(--border); background: var(--surface); padding: 1rem; position: relative; }
+    .panel::before { content: attr(data-title); position: absolute; top: -1px; left: 12px; background: var(--bg); padding: 0 6px; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; }
     .panel-title-pad { margin-top: 0.75rem; }
 
-    /* ── RIG DISPLAY ── */
-    .rig-area {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+    .rig-area { display: flex; flex-direction: column; gap: 1rem; }
 
-    /* BTC counter */
-    .btc-display {
-      text-align: center;
-      padding: 1.5rem;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      position: relative;
-      overflow: hidden;
-    }
+    .btc-display { text-align: center; padding: 1.5rem; border: 1px solid var(--border); background: var(--surface2); position: relative; overflow: hidden; }
+    .btc-display::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0,255,65,0.05) 0%, transparent 70%); pointer-events: none; }
+    .btc-label { font-size: 10px; letter-spacing: 3px; color: var(--text-faint); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .btc-amount { font-family: 'VT323', monospace; font-size: 52px; color: var(--yellow); text-shadow: 0 0 20px rgba(255,204,0,0.6); line-height: 1; letter-spacing: 2px; }
+    .btc-usd { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    .hashrate-display { font-size: 11px; color: var(--green-dim); margin-top: 8px; letter-spacing: 1px; }
 
-    .btc-display::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at center, rgba(0,255,65,0.05) 0%, transparent 70%);
-      pointer-events: none;
-    }
+    .mine-btn { width: 100%; padding: 1rem; background: var(--green-faint); border: 2px solid var(--green); color: var(--green); font-family: 'VT323', monospace; font-size: 28px; letter-spacing: 4px; cursor: pointer; text-transform: uppercase; transition: all 0.1s; box-shadow: 0 0 15px var(--green-glow); }
+    .mine-btn:hover { background: rgba(0,255,65,0.12); box-shadow: 0 0 30px var(--green-glow), inset 0 0 20px rgba(0,255,65,0.08); text-shadow: 0 0 10px var(--green); }
+    .mine-btn:active { transform: scale(0.98); }
+    .mine-btn.cooling { border-color: var(--red); color: var(--red); background: rgba(255,51,51,0.05); box-shadow: 0 0 15px rgba(255,51,51,0.2); cursor: not-allowed; }
 
-    .btc-label {
-      font-size: 10px;
-      letter-spacing: 3px;
-      color: var(--text-faint);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-    }
-
-    .btc-amount {
-      font-family: 'VT323', monospace;
-      font-size: 52px;
-      color: var(--yellow);
-      text-shadow: 0 0 20px rgba(255,204,0,0.6);
-      line-height: 1;
-      letter-spacing: 2px;
-    }
-
-    .btc-usd {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-
-    .hashrate-display {
-      font-size: 11px;
-      color: var(--green-dim);
-      margin-top: 8px;
-      letter-spacing: 1px;
-    }
-
-    /* MINE BUTTON */
-    .mine-btn {
-      width: 100%;
-      padding: 1rem;
-      background: var(--green-faint);
-      border: 2px solid var(--green);
-      color: var(--green);
-      font-family: 'VT323', monospace;
-      font-size: 28px;
-      letter-spacing: 4px;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: all 0.1s;
-      box-shadow: 0 0 15px var(--green-glow);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .mine-btn:hover {
-      background: rgba(0,255,65,0.12);
-      box-shadow: 0 0 30px var(--green-glow), inset 0 0 20px rgba(0,255,65,0.08);
-      text-shadow: 0 0 10px var(--green);
-    }
-
-    .mine-btn:active {
-      transform: scale(0.98);
-      box-shadow: 0 0 8px var(--green-glow);
-    }
-
-    .mine-btn.cooling {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(255,51,51,0.05);
-      box-shadow: 0 0 15px rgba(255,51,51,0.2);
-      cursor: not-allowed;
-    }
-
-    /* STATS ROW */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-    }
-
-    .stat-box {
-      border: 1px solid var(--border);
-      padding: 0.75rem;
-      background: var(--surface2);
-      text-align: center;
-    }
-
-    .stat-label {
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: var(--text-faint);
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .stat-value {
-      font-family: 'VT323', monospace;
-      font-size: 22px;
-      color: var(--green);
-    }
-
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+    .stat-box { border: 1px solid var(--border); padding: 0.75rem; background: var(--surface2); text-align: center; }
+    .stat-label { font-size: 9px; letter-spacing: 2px; color: var(--text-faint); text-transform: uppercase; margin-bottom: 4px; }
+    .stat-value { font-family: 'VT323', monospace; font-size: 22px; color: var(--green); }
     .stat-value.hot { color: var(--red); text-shadow: 0 0 8px rgba(255,51,51,0.5); }
     .stat-value.warm { color: var(--yellow); }
 
-    /* HEAT BAR */
-    .heat-bar-wrap {
-      border: 1px solid var(--border);
-      padding: 0.75rem;
-      background: var(--surface2);
-    }
+    .heat-bar-wrap { border: 1px solid var(--border); padding: 0.75rem; background: var(--surface2); }
+    .heat-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 1px; }
+    .heat-bar-track { height: 8px; background: var(--green-faint); border: 1px solid var(--border); position: relative; overflow: hidden; }
+    .heat-bar-fill { height: 100%; width: 0%; transition: width 0.3s, background 0.3s; background: var(--green); box-shadow: 0 0 6px currentColor; }
 
-    .heat-bar-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-bottom: 6px;
-      letter-spacing: 1px;
-    }
-
-    .heat-bar-track {
-      height: 8px;
-      background: var(--green-faint);
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .heat-bar-fill {
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s, background 0.3s;
-      background: var(--green);
-      box-shadow: 0 0 6px currentColor;
-    }
-
-    /* LOG */
-    .log-area {
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      padding: 0.5rem 0.75rem;
-      height: 120px;
-      overflow-y: auto;
-      font-size: 11px;
-      color: var(--text-dim);
-      line-height: 1.6;
-    }
-
+    .log-area { border: 1px solid var(--border); background: var(--surface2); padding: 0.5rem 0.75rem; height: 130px; overflow-y: auto; font-size: 11px; color: var(--text-dim); line-height: 1.6; }
     .log-area::-webkit-scrollbar { width: 4px; }
-    .log-area::-webkit-scrollbar-track { background: var(--surface); }
     .log-area::-webkit-scrollbar-thumb { background: var(--green-faint); }
-
     .log-line { animation: fadeIn 0.2s; }
     .log-line.good { color: var(--green); }
     .log-line.bad { color: var(--red); }
     .log-line.info { color: var(--blue); }
     .log-line.warn { color: var(--yellow); }
-
     @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
 
-    /* ── SHOP ── */
-    .shop-area {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+    /* SHOP */
+    .shop-scroll { overflow-y: auto; max-height: calc(100vh - 160px); display: flex; flex-direction: column; gap: 0.5rem; padding-right: 2px; }
+    .shop-scroll::-webkit-scrollbar { width: 4px; }
+    .shop-scroll::-webkit-scrollbar-thumb { background: var(--green-faint); }
 
-    .shop-item {
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      padding: 0.75rem;
-      cursor: pointer;
-      transition: all 0.15s;
-      position: relative;
-    }
+    .shop-item { border: 1px solid var(--border); background: var(--surface2); padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .shop-left { flex: 1; }
+    .shop-name { font-family: 'VT323', monospace; font-size: 20px; color: var(--green); line-height: 1; }
+    .shop-desc { font-size: 10px; color: var(--text-faint); margin-top: 2px; line-height: 1.4; }
+    .shop-owned { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
 
-    .shop-item:hover:not(.locked) {
-      border-color: var(--border-bright);
-      background: var(--green-faint);
-      box-shadow: 0 0 10px var(--green-glow);
-    }
+    .buy-btn { font-family: 'VT323', monospace; font-size: 18px; padding: 6px 14px; border: 1px solid var(--green); background: var(--green-faint); color: var(--green); cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+    .buy-btn:hover { background: rgba(0,255,65,0.15); box-shadow: 0 0 10px var(--green-glow); }
+    .buy-btn:active { transform: scale(0.96); }
+    .buy-btn.cant-afford { border-color: var(--text-faint); color: var(--text-faint); background: transparent; cursor: not-allowed; }
+    .buy-btn.cant-afford:hover { box-shadow: none; background: transparent; }
+    .price-text { font-size: 11px; display: block; text-align: center; margin-top: 2px; color: var(--yellow); }
+    .price-text.red { color: var(--red); }
 
-    .shop-item.locked {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
+    .float-up { position: fixed; pointer-events: none; font-family: 'VT323', monospace; font-size: 18px; color: var(--yellow); text-shadow: 0 0 8px rgba(255,204,0,0.8); animation: floatUp 1s forwards; z-index: 500; }
+    @keyframes floatUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
 
-    .shop-item.maxed {
-      border-color: rgba(255,204,0,0.4);
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .shop-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    .shop-name {
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      color: var(--green);
-      line-height: 1;
-    }
-
-    .shop-desc {
-      font-size: 10px;
-      color: var(--text-faint);
-      margin-top: 2px;
-      line-height: 1.4;
-    }
-
-    .shop-price {
-      font-family: 'VT323', monospace;
-      font-size: 16px;
-      color: var(--yellow);
-      white-space: nowrap;
-      text-align: right;
-    }
-
-    .shop-price.cant-afford { color: var(--red); opacity: 0.7; }
-
-    .shop-owned {
-      font-size: 9px;
-      color: var(--text-faint);
-      text-align: right;
-      margin-top: 2px;
-    }
-
-    .shop-bar {
-      height: 2px;
-      background: var(--green-faint);
-      margin-top: 6px;
-      position: relative;
-    }
-
-    .shop-bar-fill {
-      height: 100%;
-      background: var(--green-dim);
-      transition: width 0.3s;
-    }
-
-    /* PASSIVE INCOME TICK */
-    .float-up {
-      position: fixed;
-      pointer-events: none;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      color: var(--yellow);
-      text-shadow: 0 0 8px rgba(255,204,0,0.8);
-      animation: floatUp 1s forwards;
-      z-index: 500;
-    }
-
-    @keyframes floatUp {
-      0%   { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-60px); }
-    }
-
-    /* ── FOOTER ── */
-    .footer-bar {
-      border: 1px solid var(--border);
-      padding: 0.5rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      background: var(--surface);
-      font-size: 10px;
-      color: var(--text-faint);
-      letter-spacing: 1px;
-    }
-
+    .footer-bar { border: 1px solid var(--border); padding: 0.5rem 1rem; display: flex; justify-content: space-between; background: var(--surface); font-size: 10px; color: var(--text-faint); letter-spacing: 1px; }
     .blink { animation: blink 1s step-end infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
-
-    /* scrollbar global */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--green-faint); }
+    @keyframes blink { 50%{opacity:0} }
   </style>
 </head>
 <body>
-
 <div class="shell">
 
-  <!-- HEADER -->
   <header class="header">
     <div class="logo">CRYPTO<span>₿</span>MINER <span style="font-size:14px;color:var(--text-faint)">v0.4.2</span></div>
     <div class="header-stats">
@@ -453,13 +109,9 @@
     </div>
   </header>
 
-  <!-- MAIN -->
   <div class="main">
 
-    <!-- LEFT: RIG -->
     <div class="rig-area">
-
-      <!-- BTC DISPLAY -->
       <div class="btc-display">
         <div class="btc-label">// wallet balance</div>
         <div class="btc-amount" id="btc-display">0.00000000</div>
@@ -467,10 +119,8 @@
         <div class="hashrate-display" id="hashrate-display">hashrate: 1 H/s &nbsp;|&nbsp; per click: 0.00000010 ₿</div>
       </div>
 
-      <!-- MINE BUTTON -->
       <button class="mine-btn" id="mine-btn" onclick="mine()">[ MINE BLOCK ]</button>
 
-      <!-- STATS -->
       <div class="stats-row">
         <div class="stat-box">
           <div class="stat-label">Temperature</div>
@@ -486,7 +136,6 @@
         </div>
       </div>
 
-      <!-- HEAT BAR -->
       <div class="heat-bar-wrap">
         <div class="heat-bar-label">
           <span>THERMAL LOAD</span>
@@ -497,179 +146,85 @@
         </div>
       </div>
 
-      <!-- LOG -->
       <div class="panel" data-title="// system log">
         <div class="panel-title-pad">
           <div class="log-area" id="log"></div>
         </div>
       </div>
-
     </div>
 
-    <!-- RIGHT: SHOP -->
-    <div class="panel" data-title="// upgrades &amp; hardware" style="overflow-y:auto; max-height: 80vh;">
-      <div class="panel-title-pad shop-area" id="shop"></div>
+    <div class="panel" data-title="// shop">
+      <div class="panel-title-pad">
+        <div class="shop-scroll" id="shop"></div>
+      </div>
     </div>
 
   </div>
 
-  <!-- FOOTER -->
   <div class="footer-bar">
     <span>SYS: NOMINAL <span class="blink">█</span></span>
-    <span id="footer-passive">passive income: 0.00000000 ₿/s</span>
-    <span>NOT REAL MONEY. FOR ENTERTAINMENT ONLY.</span>
+    <span id="footer-passive">passive: 0.00000000 ₿/s</span>
+    <span>NOT REAL MONEY.</span>
   </div>
 
 </div>
 
 <script>
-// ══════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════
 const BTC_PRICE = 68420;
 
 let btc = 0;
-let heat = 0;        // 0–100
+let heat = 0;
 let blocks = 0;
-let startTime = Date.now();
 let cooling = false;
+let startTime = Date.now();
+let lastTick = Date.now();
 
-// upgrades
-const UPGRADES = [
-  {
-    id: 'cpu',
-    name: 'CPU OVERCLOCK',
-    desc: '+5 H/s per click. Runs hot.',
-    baseCost: 0.0005,
-    costMult: 1.6,
-    maxLevel: 10,
-    level: 0,
-    effect: s => { s.clickHash += 5; s.heatPerClick += 2; s.power += 15; },
-    icon: '🔲'
-  },
-  {
-    id: 'gpu',
-    name: 'GPU ARRAY',
-    desc: '+50 H/s passive. Big power draw.',
-    baseCost: 0.002,
-    costMult: 1.8,
-    maxLevel: 8,
-    level: 0,
-    effect: s => { s.passiveHash += 50; s.power += 80; s.heatRegen += 1.5; },
-    icon: '🖥️'
-  },
-  {
-    id: 'cooling',
-    name: 'LIQUID COOLING',
-    desc: 'Reduces heat gain by 30%.',
-    baseCost: 0.001,
-    costMult: 2.0,
-    maxLevel: 5,
-    level: 0,
-    effect: s => { s.heatMult *= 0.7; },
-    icon: '❄️'
-  },
-  {
-    id: 'asic',
-    name: 'ASIC MINER',
-    desc: '+500 H/s passive. The real deal.',
-    baseCost: 0.015,
-    costMult: 2.2,
-    maxLevel: 6,
-    level: 0,
-    effect: s => { s.passiveHash += 500; s.power += 300; s.heatRegen += 3; },
-    icon: '⚡'
-  },
-  {
-    id: 'psu',
-    name: 'BETTER PSU',
-    desc: '+20% efficiency. Less waste heat.',
-    baseCost: 0.003,
-    costMult: 1.9,
-    maxLevel: 4,
-    level: 0,
-    effect: s => { s.efficiency += 0.2; s.heatMult *= 0.85; },
-    icon: '🔋'
-  },
-  {
-    id: 'farm',
-    name: 'MINING FARM',
-    desc: '+5000 H/s passive. You made it.',
-    baseCost: 0.12,
-    costMult: 2.5,
-    maxLevel: 4,
-    level: 0,
-    effect: s => { s.passiveHash += 5000; s.power += 2000; s.heatRegen += 8; },
-    icon: '🏭'
-  },
-  {
-    id: 'autofan',
-    name: 'AUTO FANS',
-    desc: 'Heat dissipates 2x faster.',
-    baseCost: 0.008,
-    costMult: 2.1,
-    maxLevel: 3,
-    level: 0,
-    effect: s => { s.heatDecay *= 2; },
-    icon: '🌀'
-  },
-  {
-    id: 'quantum',
-    name: 'QUANTUM RIG',
-    desc: '+50000 H/s. Probably illegal.',
-    baseCost: 1.0,
-    costMult: 3.0,
-    maxLevel: 3,
-    level: 0,
-    effect: s => { s.passiveHash += 50000; s.power += 10000; s.heatRegen += 20; },
-    icon: '🔬'
-  },
+// Each item: bought = how many owned, flat effect per purchase
+const ITEMS = [
+  { id:'cpu',     icon:'🔲', name:'CPU OVERCLOCK',   desc:'+2 H/s per click. Runs a bit hot.',         cost:0.0003, clickHash:2,  passiveHash:0,   heatPerClick:1,  heatRegen:0,   power:10,   efficiency:0 },
+  { id:'fan',     icon:'🌀', name:'CASE FANS',        desc:'Reduces heat buildup significantly.',        cost:0.0006, clickHash:0,  passiveHash:0,   heatPerClick:-2, heatRegen:0,   power:5,    efficiency:0 },
+  { id:'gpu',     icon:'🖥️', name:'GPU',              desc:'+30 H/s passive mining.',                   cost:0.002,  clickHash:0,  passiveHash:30,  heatPerClick:0,  heatRegen:1,   power:80,   efficiency:0 },
+  { id:'cooling', icon:'❄️', name:'LIQUID COOLING',   desc:'Big heat reduction. Worth it.',              cost:0.004,  clickHash:0,  passiveHash:0,   heatPerClick:-4, heatRegen:-2,  power:20,   efficiency:0 },
+  { id:'psu',     icon:'🔋', name:'BETTER PSU',       desc:'+15% efficiency on all mining.',             cost:0.006,  clickHash:0,  passiveHash:0,   heatPerClick:0,  heatRegen:0,   power:0,    efficiency:0.15 },
+  { id:'asic',    icon:'⚡', name:'ASIC MINER',       desc:'+400 H/s passive. The real deal.',           cost:0.02,   clickHash:0,  passiveHash:400, heatPerClick:0,  heatRegen:4,   power:300,  efficiency:0 },
+  { id:'farm',    icon:'🏭', name:'MINING FARM',      desc:'+3000 H/s passive. You made it.',            cost:0.15,   clickHash:0,  passiveHash:3000,heatPerClick:0,  heatRegen:10,  power:2000, efficiency:0 },
+  { id:'quantum', icon:'🔬', name:'QUANTUM RIG',      desc:'+40000 H/s. Probably illegal.',              cost:1.2,    clickHash:0,  passiveHash:40000,heatPerClick:0, heatRegen:25,  power:9999, efficiency:0 },
 ];
 
+// track how many of each bought
+const owned = {};
+ITEMS.forEach(i => owned[i.id] = 0);
+
 function getStats() {
-  let s = {
-    clickHash: 1,
-    passiveHash: 0,
-    heatPerClick: 5,
-    heatMult: 1.0,
-    heatDecay: 1.0,
-    heatRegen: 0,
-    power: 120,
-    efficiency: 1.0,
-  };
-  UPGRADES.forEach(u => {
-    for (let i = 0; i < u.level; i++) u.effect(s);
+  let s = { clickHash:1, passiveHash:0, heatPerClick:5, heatRegen:0, power:120, efficiency:1.0, heatDecayBonus:0 };
+  ITEMS.forEach(item => {
+    const n = owned[item.id];
+    if (n === 0) return;
+    s.clickHash     += item.clickHash * n;
+    s.passiveHash   += item.passiveHash * n;
+    s.heatPerClick  += item.heatPerClick * n;
+    s.heatRegen     += item.heatRegen * n;
+    s.power         += item.power * n;
+    s.efficiency    += item.efficiency * n;
   });
+  s.heatPerClick = Math.max(1, s.heatPerClick);
   return s;
 }
 
-function upgradeCost(u) {
-  return u.baseCost * Math.pow(u.costMult, u.level);
-}
-
-// ══════════════════════════════════════
-//  MINING
-// ══════════════════════════════════════
-function hashTobtc(hash) {
-  return hash * 0.0000001;
+function itemCost(item) {
+  // price scales with how many you own
+  return item.cost * Math.pow(1.15, owned[item.id]);
 }
 
 function mine() {
   if (cooling) return;
   const s = getStats();
-
-  // heat
-  const heatGain = s.heatPerClick * s.heatMult;
-  heat = Math.min(100, heat + heatGain);
-
-  // btc
-  const earned = hashTobtc(s.clickHash) * s.efficiency;
+  heat = Math.min(100, heat + s.heatPerClick);
+  const earned = s.clickHash * 0.0000001 * s.efficiency;
   btc += earned;
   blocks++;
-
-  floatText(`+${earned.toFixed(8)} ₿`);
-  log(`Block mined. +${earned.toFixed(8)} ₿ &nbsp;[${s.clickHash} H]`, 'good');
-
+  floatText('+' + earned.toFixed(8) + ' ₿');
+  log('Block mined. +' + earned.toFixed(8) + ' ₿  [' + s.clickHash + ' H]', 'good');
   if (heat >= 100) triggerOverheat();
   updateUI();
 }
@@ -680,25 +235,19 @@ function triggerOverheat() {
   btn.textContent = '[ OVERHEATING — COOLING DOWN ]';
   btn.classList.add('cooling');
   log('⚠ THERMAL SHUTDOWN. Cooling required.', 'bad');
-
-  // penalty: lose a bit of btc
   const penalty = btc * 0.01;
   btc = Math.max(0, btc - penalty);
-  if (penalty > 0) log(`Thermal damage: -${penalty.toFixed(8)} ₿`, 'bad');
+  if (penalty > 0.000000001) log('Thermal damage: -' + penalty.toFixed(8) + ' ₿', 'bad');
 }
 
-// ══════════════════════════════════════
-//  SHOP
-// ══════════════════════════════════════
-function buyUpgrade(id) {
-  const u = UPGRADES.find(x => x.id === id);
-  if (!u || u.level >= u.maxLevel) return;
-  const cost = upgradeCost(u);
-  if (btc < cost) { log(`Insufficient funds for ${u.name}.`, 'bad'); return; }
+function buyItem(id) {
+  const item = ITEMS.find(i => i.id === id);
+  if (!item) return;
+  const cost = itemCost(item);
+  if (btc < cost) { log('Insufficient funds for ' + item.name + '.', 'bad'); return; }
   btc -= cost;
-  u.level++;
-  log(`Purchased: ${u.name} (lvl ${u.level}/${u.maxLevel})`, 'info');
-  if (u.id === 'cooling' || u.id === 'autofan') log('Thermal management improved.', 'warn');
+  owned[id]++;
+  log('Purchased: ' + item.icon + ' ' + item.name + ' (x' + owned[id] + ')', 'info');
   renderShop();
   updateUI();
 }
@@ -706,151 +255,108 @@ function buyUpgrade(id) {
 function renderShop() {
   const shop = document.getElementById('shop');
   shop.innerHTML = '';
-  UPGRADES.forEach(u => {
-    const cost = upgradeCost(u);
+  ITEMS.forEach(item => {
+    const cost = itemCost(item);
     const canAfford = btc >= cost;
-    const maxed = u.level >= u.maxLevel;
-    const pct = (u.level / u.maxLevel * 100).toFixed(0);
 
     const div = document.createElement('div');
-    div.className = 'shop-item' + (maxed ? ' maxed' : (!canAfford ? ' locked' : ''));
-    div.onclick = () => buyUpgrade(u.id);
+    div.className = 'shop-item';
     div.innerHTML = `
-      <div class="shop-row">
-        <div>
-          <div class="shop-name">${u.icon} ${u.name}</div>
-          <div class="shop-desc">${u.desc}</div>
-        </div>
-        <div>
-          <div class="shop-price ${canAfford || maxed ? '' : 'cant-afford'}">
-            ${maxed ? 'MAXED' : '₿ ' + cost.toFixed(6)}
-          </div>
-          <div class="shop-owned">lvl ${u.level}/${u.maxLevel}</div>
-        </div>
+      <div class="shop-left">
+        <div class="shop-name">${item.icon} ${item.name}</div>
+        <div class="shop-desc">${item.desc}</div>
+        <div class="shop-owned">owned: ${owned[item.id]}</div>
       </div>
-      <div class="shop-bar"><div class="shop-bar-fill" style="width:${pct}%"></div></div>
+      <div style="text-align:center">
+        <button class="buy-btn ${canAfford ? '' : 'cant-afford'}" onclick="buyItem('${item.id}')">BUY</button>
+        <span class="price-text ${canAfford ? '' : 'red'}">₿ ${cost.toFixed(6)}</span>
+      </div>
     `;
     shop.appendChild(div);
   });
 }
 
-// ══════════════════════════════════════
-//  LOG
-// ══════════════════════════════════════
-const BOOT_LINES = [
-  { t: 'Initializing mining daemon...', c: '' },
-  { t: 'Checking wallet integrity... OK', c: 'good' },
-  { t: 'Connecting to pool: mine.cryptopool.io:3333', c: '' },
-  { t: 'Pool connection established.', c: 'good' },
-  { t: 'GPU detected: RTX 3070 (fake)', c: 'info' },
-  { t: 'Ready to mine. Click [MINE BLOCK] to begin.', c: 'warn' },
-];
-
-function log(msg, cls = '') {
+function log(msg, cls) {
   const el = document.getElementById('log');
   const line = document.createElement('div');
-  line.className = 'log-line ' + cls;
+  line.className = 'log-line ' + (cls || '');
   const now = new Date();
-  const ts = `[${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}]`;
-  line.innerHTML = `<span style="color:var(--text-faint)">${ts}</span> ${msg}`;
+  const ts = '[' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0') + ']';
+  line.innerHTML = '<span style="color:var(--text-faint)">' + ts + '</span> ' + msg;
   el.appendChild(line);
   el.scrollTop = el.scrollHeight;
 }
 
-// ══════════════════════════════════════
-//  FLOAT TEXT
-// ══════════════════════════════════════
 function floatText(text) {
   const btn = document.getElementById('mine-btn');
   const r = btn.getBoundingClientRect();
   const el = document.createElement('div');
   el.className = 'float-up';
   el.textContent = text;
-  el.style.left = (r.left + r.width / 2 - 40) + 'px';
-  el.style.top  = (r.top - 10 + window.scrollY) + 'px';
+  el.style.left = (r.left + r.width / 2 - 60) + 'px';
+  el.style.top = (r.top - 10 + window.scrollY) + 'px';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1000);
 }
 
-// ══════════════════════════════════════
-//  UI UPDATE
-// ══════════════════════════════════════
 function updateUI() {
   const s = getStats();
-
-  // btc display
   document.getElementById('btc-display').textContent = btc.toFixed(8);
-  document.getElementById('usd-display').textContent = `≈ $${(btc * BTC_PRICE).toFixed(2)} USD`;
+  document.getElementById('usd-display').textContent = '≈ $' + (btc * BTC_PRICE).toFixed(2) + ' USD';
   document.getElementById('hashrate-display').textContent =
-    `hashrate: ${(s.passiveHash + s.clickHash).toLocaleString()} H/s  |  per click: ${hashTobtc(s.clickHash).toFixed(8)} ₿`;
+    'hashrate: ' + (s.passiveHash + s.clickHash).toLocaleString() + ' H/s  |  per click: ' + (s.clickHash * 0.0000001).toFixed(8) + ' ₿';
 
-  // heat
   const heatPct = heat.toFixed(0);
   document.getElementById('heat-pct').textContent = heatPct + '%';
   const bar = document.getElementById('heat-bar');
   bar.style.width = heatPct + '%';
   bar.style.background = heat > 80 ? 'var(--red)' : heat > 50 ? 'var(--yellow)' : 'var(--green)';
-  bar.style.boxShadow = `0 0 6px ${heat > 80 ? 'var(--red)' : heat > 50 ? 'var(--yellow)' : 'var(--green)'}`;
 
-  // stats
-  const tempBase = 42 + (heat * 0.7);
+  const temp = 42 + heat * 0.7;
   const tempEl = document.getElementById('temp-val');
-  tempEl.textContent = tempBase.toFixed(0) + '°C';
-  tempEl.className = 'stat-value' + (tempBase > 90 ? ' hot' : tempBase > 70 ? ' warm' : '');
+  tempEl.textContent = temp.toFixed(0) + '°C';
+  tempEl.className = 'stat-value' + (temp > 90 ? ' hot' : temp > 70 ? ' warm' : '');
 
   document.getElementById('power-val').textContent = s.power + 'W';
-  document.getElementById('eff-val').textContent = s.efficiency.toFixed(1) + 'x';
-
-  // header
+  document.getElementById('eff-val').textContent = s.efficiency.toFixed(2) + 'x';
   document.getElementById('hdr-worth').textContent = '$' + (btc * BTC_PRICE).toFixed(2);
   document.getElementById('hdr-blocks').textContent = blocks.toLocaleString();
-
-  // footer
   document.getElementById('footer-passive').textContent =
-    `passive income: ${hashTobtc(s.passiveHash * s.efficiency).toFixed(8)} ₿/s`;
+    'passive: ' + (s.passiveHash * 0.0000001 * s.efficiency).toFixed(8) + ' ₿/s';
 
-  // shop affordability refresh (just re-render classes)
-  document.querySelectorAll('.shop-item').forEach((el, i) => {
-    const u = UPGRADES[i];
-    if (!u) return;
-    const cost = upgradeCost(u);
-    const maxed = u.level >= u.maxLevel;
-    el.className = 'shop-item' + (maxed ? ' maxed' : (btc < cost ? ' locked' : ''));
-    const priceEl = el.querySelector('.shop-price');
-    if (priceEl && !maxed) priceEl.className = 'shop-price' + (btc >= cost ? '' : ' cant-afford');
+  // refresh buy button affordability
+  document.querySelectorAll('.buy-btn').forEach((btn, i) => {
+    const item = ITEMS[i];
+    if (!item) return;
+    const cost = itemCost(item);
+    const can = btc >= cost;
+    btn.className = 'buy-btn' + (can ? '' : ' cant-afford');
+    const priceEl = btn.nextElementSibling;
+    if (priceEl) {
+      priceEl.textContent = '₿ ' + cost.toFixed(6);
+      priceEl.className = 'price-text' + (can ? '' : ' red');
+    }
   });
 }
-
-// ══════════════════════════════════════
-//  GAME LOOP
-// ══════════════════════════════════════
-let lastTick = Date.now();
 
 function gameTick() {
   const now = Date.now();
   const dt = (now - lastTick) / 1000;
   lastTick = now;
-
   const s = getStats();
 
-  // passive mining
   if (!cooling && s.passiveHash > 0) {
-    const earned = hashTobtc(s.passiveHash) * s.efficiency * dt;
+    const earned = s.passiveHash * 0.0000001 * s.efficiency * dt;
     btc += earned;
-    // occasional passive log
-    if (Math.random() < 0.015) {
-      log(`Auto-mined: +${(earned * 60).toFixed(8)} ₿/min`, 'good');
-    }
+    if (Math.random() < 0.01) log('Auto-mined: +' + (earned * 60).toFixed(8) + ' ₿/min', 'good');
   }
 
-  // heat decay
   if (heat > 0) {
-    const decay = (0.8 + s.heatDecay * 0.5) * dt * (cooling ? 4 : 1);
+    const decay = (1 + s.heatRegen * 0.1) * dt * (cooling ? 5 : 1);
     heat = Math.max(0, heat - decay);
   }
 
-  // cooldown recovery
-  if (cooling && heat <= 15) {
+  if (cooling && heat <= 10) {
     cooling = false;
     const btn = document.getElementById('mine-btn');
     btn.textContent = '[ MINE BLOCK ]';
@@ -858,32 +364,32 @@ function gameTick() {
     log('System cooled. Mining resumed.', 'info');
   }
 
-  // uptime
   const elapsed = Math.floor((now - startTime) / 1000);
-  const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-  const sec = String(elapsed % 60).padStart(2, '0');
-  document.getElementById('hdr-uptime').textContent = `${h}:${m}:${sec}`;
+  const h = String(Math.floor(elapsed / 3600)).padStart(2,'0');
+  const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
+  const sec = String(elapsed % 60).padStart(2,'0');
+  document.getElementById('hdr-uptime').textContent = h + ':' + m + ':' + sec;
 
   updateUI();
   requestAnimationFrame(gameTick);
 }
 
-// ══════════════════════════════════════
-//  BOOT
-// ══════════════════════════════════════
-let bootIdx = 0;
-function bootSequence() {
-  if (bootIdx < BOOT_LINES.length) {
-    const l = BOOT_LINES[bootIdx++];
-    log(l.t, l.c);
-    setTimeout(bootSequence, 300 + Math.random() * 200);
-  }
+// boot
+const BOOT = [
+  ['Initializing mining daemon...', ''],
+  ['Checking wallet integrity... OK', 'good'],
+  ['Connecting to pool: mine.cryptopool.io:3333', ''],
+  ['Pool connection established.', 'good'],
+  ['GPU detected: RTX 3070 (fake)', 'info'],
+  ['Ready. Click [MINE BLOCK] to begin.', 'warn'],
+];
+let bi = 0;
+function boot() {
+  if (bi < BOOT.length) { log(BOOT[bi][0], BOOT[bi][1]); bi++; setTimeout(boot, 280 + Math.random()*180); }
 }
 
 renderShop();
-bootSequence();
-lastTick = Date.now();
+boot();
 requestAnimationFrame(gameTick);
 </script>
 </body>
