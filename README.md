@@ -1,1 +1,623 @@
-# nothappeningpng.github.io
+[scp-914 (1).html](https://github.com/user-attachments/files/26388343/scp-914.1.html)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCP-914 — The Clockwork</title>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f2ed;
+      --surface: #ede9e1;
+      --surface2: #e4dfd5;
+      --border: rgba(60,50,30,0.25);
+      --border-strong: rgba(60,50,30,0.5);
+      --text: #1a1612;
+      --text-muted: #5a5248;
+      --text-faint: #8a8278;
+      --accent: #2b4a7a;
+      --accent-bg: #dce6f2;
+      --accent-text: #1a3456;
+      --warning-bg: #fdf3d8;
+      --warning-border: rgba(180,130,0,0.35);
+      --warning-text: #7a5500;
+      --danger-bg: #fde8e8;
+      --danger-border: rgba(160,40,40,0.3);
+      --danger-text: #8b1a1a;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #13120f;
+        --surface: #1c1a16;
+        --surface2: #252219;
+        --border: rgba(200,190,160,0.15);
+        --border-strong: rgba(200,190,160,0.35);
+        --text: #e8e4d8;
+        --text-muted: #a09888;
+        --text-faint: #6a6258;
+        --accent: #6a9fd8;
+        --accent-bg: #0e1f36;
+        --accent-text: #a8c8f0;
+        --warning-bg: #1f1800;
+        --warning-border: rgba(200,150,0,0.3);
+        --warning-text: #d4a020;
+        --danger-bg: #1f0a0a;
+        --danger-border: rgba(200,60,60,0.3);
+        --danger-text: #e06060;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      padding: 2rem 1rem 3rem;
+    }
+
+    .wrapper {
+      max-width: 740px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .scp-header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border-strong);
+    }
+
+    .doc-id {
+      font-family: 'Special Elite', serif;
+      font-size: 11px;
+      color: var(--text-faint);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: 'Special Elite', serif;
+      font-size: 36px;
+      font-weight: 400;
+      letter-spacing: 4px;
+      margin: 4px 0 2px;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    /* WARNING BAR */
+    .warning-bar {
+      background: var(--warning-bg);
+      border: 0.5px solid var(--warning-border);
+      color: var(--warning-text);
+      font-size: 11px;
+      text-align: center;
+      padding: 8px 14px;
+      letter-spacing: 1px;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+    }
+
+    /* DIAL */
+    .section-label {
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .dial-section { margin-bottom: 1.5rem; }
+
+    .dial-options {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .dial-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 8px 6px;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, border 0.15s;
+      text-transform: uppercase;
+    }
+
+    .dial-btn:hover { background: var(--surface2); }
+
+    .dial-btn.active {
+      border: 2px solid var(--accent);
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      font-weight: 500;
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-left: 2px solid var(--border-strong);
+      line-height: 1.6;
+    }
+
+    /* INPUT ROW */
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .item-input {
+      flex: 1;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .item-input:focus { border-color: var(--accent); }
+    .item-input::placeholder { color: var(--text-faint); }
+
+    .run-btn {
+      padding: 10px 20px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: var(--text);
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .run-btn:hover { background: var(--surface2); }
+    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* MACHINE VIZ */
+    .machine-layout {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 1.5rem;
+    }
+
+    .booth {
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--surface);
+    }
+
+    .booth-label {
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .booth-content {
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .item-image {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+    }
+
+    .item-label-sm {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .center-machine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 20px;
+    }
+
+    .dir-label {
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 1px;
+    }
+
+    .arrow { font-size: 18px; color: var(--text-faint); }
+
+    .gear-icon {
+      font-size: 28px;
+      display: inline-block;
+      transition: transform 1.5s ease;
+    }
+
+    .gear-icon.spinning { transform: rotate(720deg); }
+
+    /* OUTPUT PANEL */
+    .output-panel {
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      display: none;
+    }
+
+    .output-panel.visible { display: block; }
+
+    .output-header {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .output-image-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .output-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .output-item-name {
+      font-weight: 500;
+      color: var(--accent-text);
+    }
+
+    .output-desc {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text);
+      margin-top: 4px;
+    }
+
+    .log-entry {
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 0.5px solid var(--border);
+      line-height: 1.6;
+    }
+
+    .processing-anim {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--danger-text);
+      padding: 8px 12px;
+      border: 0.5px solid var(--danger-border);
+      border-radius: var(--radius);
+      background: var(--danger-bg);
+    }
+
+    /* API KEY SECTION */
+    .apikey-section {
+      margin-bottom: 1.25rem;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+    }
+
+    .apikey-section label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .apikey-input {
+      width: 100%;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .apikey-input:focus { border-color: var(--accent); }
+    .apikey-input::placeholder { color: var(--text-faint); }
+
+    .apikey-note {
+      font-size: 10px;
+      color: var(--text-faint);
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="scp-header">
+    <div class="doc-id">SCP Foundation — Object Class: Safe</div>
+    <h1>SCP-914</h1>
+    <div class="subtitle">The Clockwork — Intake / Refinement Interface</div>
+  </div>
+
+  <div class="warning-bar">
+    ⚠ CAUTION: All items placed in SCP-914 are subject to unpredictable transformation. The Foundation assumes no liability.
+  </div>
+
+  <!-- API KEY -->
+  <div class="apikey-section">
+    <label>// Groq API Key</label>
+    <input class="apikey-input" id="api-key" type="password" placeholder="gsk_..." />
+    <div class="apikey-note">Your key is never stored or sent anywhere except directly to api.groq.com</div>
+  </div>
+
+  <!-- DIAL -->
+  <div class="dial-section">
+    <div class="section-label">// Setting Dial</div>
+    <div class="dial-options">
+      <button class="dial-btn" data-setting="rough" data-desc="Destructive. Item is likely destroyed, burned, or reduced to constituent parts in a crude manner.">Rough</button>
+      <button class="dial-btn" data-setting="coarse" data-desc="Degrading. Item is altered into a cruder, simpler, or functionally worse version of itself.">Coarse</button>
+      <button class="dial-btn active" data-setting="1:1" data-desc="Equivalent exchange. Item is replaced with something of roughly equal value or function — but not the same item.">1:1</button>
+      <button class="dial-btn" data-setting="fine" data-desc="Improving. Item is upgraded, refined, or made into a superior version with notable enhancements.">Fine</button>
+      <button class="dial-btn" data-setting="very fine" data-desc="Transcendent. Item is transformed into a perfected, sometimes impossible or anomalous version of itself.">Very Fine</button>
+    </div>
+    <div class="setting-desc" id="setting-desc">Equivalent exchange. Item is replaced with something of roughly equal value or function — but not the same item.</div>
+  </div>
+
+  <!-- INPUT ROW -->
+  <div class="input-row">
+    <input class="item-input" id="item-input" type="text" placeholder="Enter item (e.g. a rubber duck, a kitchen knife, a human tooth...)" />
+    <button class="run-btn" id="run-btn" onclick="runProcess()">Process →</button>
+  </div>
+
+  <!-- MACHINE VIZ -->
+  <div class="machine-layout" id="machine-viz" style="display:none;">
+    <div class="booth">
+      <div class="booth-label">// Input Booth</div>
+      <div class="booth-content" id="input-booth">
+        <div class="item-label-sm" id="input-item-label"></div>
+        <img class="item-image" id="input-img" style="display:none;" alt="input item" />
+      </div>
+    </div>
+    <div class="center-machine">
+      <div class="dir-label">INTAKE</div>
+      <div class="arrow">→</div>
+      <span class="gear-icon" id="gear">⚙</span>
+      <div class="arrow">→</div>
+      <div class="dir-label">OUTPUT</div>
+    </div>
+    <div class="booth">
+      <div class="booth-label">// Output Booth</div>
+      <div class="booth-content" id="output-booth">
+        <div id="output-booth-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT LOG -->
+  <div class="output-panel" id="output-panel">
+    <div class="output-header">// Experiment Log</div>
+    <div id="output-result"></div>
+  </div>
+
+</div>
+
+<script>
+  const settingDescs = {
+    'rough': 'Destructive. Item is likely destroyed, burned, or reduced to constituent parts in a crude manner.',
+    'coarse': 'Degrading. Item is altered into a cruder, simpler, or functionally worse version of itself.',
+    '1:1': 'Equivalent exchange. Item is replaced with something of roughly equal value or function — but not the same item.',
+    'fine': 'Improving. Item is upgraded, refined, or made into a superior version with notable enhancements.',
+    'very fine': 'Transcendent. Item is transformed into a perfected, sometimes impossible or anomalous version of itself.'
+  };
+
+  let currentSetting = '1:1';
+
+  document.querySelectorAll('.dial-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.dial-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSetting = btn.dataset.setting;
+      document.getElementById('setting-desc').textContent = settingDescs[currentSetting];
+    });
+  });
+
+  document.getElementById('item-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runProcess();
+  });
+
+  async function callAPI(messages, system) {
+    const apiKey = document.getElementById('api-key').value.trim();
+    if (!apiKey) throw new Error('No API key provided. Please enter your Groq API key above.');
+
+    const groqMessages = [];
+    if (system) groqMessages.push({ role: 'system', content: system });
+    groqMessages.push(...messages);
+
+    const body = {
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 1000,
+      messages: groqMessages
+    };
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `API error ${res.status}`);
+    }
+    const data = await res.json();
+    // Normalize to Anthropic-like shape so the rest of the code works
+    const text = data.choices?.[0]?.message?.content || '';
+    return { content: [{ type: 'text', text }] };
+  }
+
+  async function fetchImage(query) {
+    // Groq does not support web search; use a Wikipedia thumbnail as a fallback
+    try {
+      const encoded = encodeURIComponent(query);
+      const res = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encoded}`
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.thumbnail?.source || null;
+    } catch { return null; }
+  }
+
+  async function runProcess() {
+    const input = document.getElementById('item-input').value.trim();
+    if (!input) return;
+
+    const runBtn = document.getElementById('run-btn');
+    runBtn.disabled = true;
+    runBtn.textContent = 'Processing...';
+
+    const machineViz = document.getElementById('machine-viz');
+    const outputPanel = document.getElementById('output-panel');
+    const outputResult = document.getElementById('output-result');
+    const inputBoothLabel = document.getElementById('input-item-label');
+    const inputImg = document.getElementById('input-img');
+    const outputBoothContent = document.getElementById('output-booth-content');
+    const gear = document.getElementById('gear');
+
+    machineViz.style.display = 'grid';
+    outputPanel.classList.add('visible');
+    inputBoothLabel.textContent = input;
+    inputImg.style.display = 'none';
+    outputBoothContent.innerHTML = '';
+    outputResult.innerHTML = '<span class="processing-anim">PROCESSING...</span>';
+
+    gear.classList.remove('spinning');
+    void gear.offsetWidth;
+    gear.classList.add('spinning');
+
+    const inputImgUrl = await fetchImage(input);
+    if (inputImgUrl) {
+      inputImg.src = inputImgUrl;
+      inputImg.style.display = 'block';
+      inputImg.onerror = () => { inputImg.style.display = 'none'; };
+    }
+
+    try {
+      const data = await callAPI(
+        [{ role: 'user', content: `Item placed in intake booth: ${input}\nDial setting: ${currentSetting.toUpperCase()}` }],
+        `You are SCP-914, the Clockwork — an anomalous refining machine from the SCP Foundation.
+When given an item and a dial setting, you output a transformation result written as a clinical SCP experiment log entry.
+
+Dial settings and their effects:
+- ROUGH: Destructive, crude disassembly. Results are often charred, broken, or violently reduced.
+- COARSE: Degraded output. A worse, cruder, or simpler version of the input.
+- 1:1: Equivalent exchange. Something of roughly equal function — but not the same object.
+- FINE: Improved, upgraded, refined version with notable enhancements.
+- VERY FINE: Transcendent, near-impossible perfection. Often anomalous, beautiful, or disturbing in its perfection.
+
+Respond with a JSON object ONLY, no markdown, no backticks:
+{
+  "output_item": "name of what came out",
+  "description": "2-3 sentences describing the output in clinical SCP log style",
+  "notes": "1 sentence of researcher notes or anomalies noticed"
+}`
+      );
+
+      const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+      let result;
+      try {
+        result = JSON.parse(text.replace(/```json|```/g, '').trim());
+      } catch {
+        result = { output_item: 'Unknown substance', description: text, notes: 'Analysis inconclusive.' };
+      }
+
+      const outputImgUrl = await fetchImage(result.output_item);
+
+      outputBoothContent.innerHTML = `
+        <div class="item-label-sm" style="font-weight:500;color:var(--accent-text);margin-bottom:4px;">${result.output_item}</div>
+        ${outputImgUrl ? `<img class="item-image" src="${outputImgUrl}" onerror="this.style.display='none'" alt="output item" />` : ''}
+      `;
+
+      outputResult.innerHTML = `
+        <div class="output-image-row">
+          ${outputImgUrl ? `<img class="output-img" src="${outputImgUrl}" onerror="this.style.display='none'" alt="output" />` : ''}
+          <div>
+            <div class="output-item-name">${result.output_item}</div>
+            <div class="output-desc">${result.description}</div>
+          </div>
+        </div>
+        <div class="log-entry">Researcher notes: ${result.notes}</div>
+      `;
+    } catch (err) {
+      outputResult.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+    }
+
+    runBtn.disabled = false;
+    runBtn.textContent = 'Process →';
+  }
+</script>
+</body>
+</html>
