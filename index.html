@@ -43,9 +43,9 @@
     .card:hover { background: var(--surface2); }
     .card:hover::before { opacity: 1; }
     .card-tag { display: inline-block; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; border: 1px solid; width: fit-content; }
-    .tag-ai      { color: var(--accent);  border-color: rgba(200,180,255,0.25); background: rgba(200,180,255,0.06); }
-    .tag-tool    { color: var(--accent2); border-color: rgba(124,240,200,0.25); background: rgba(124,240,200,0.06); }
-    .tag-game    { color: var(--accent3); border-color: rgba(240,168,124,0.25); background: rgba(240,168,124,0.06); }
+    .tag-ai   { color: var(--accent);  border-color: rgba(200,180,255,0.25); background: rgba(200,180,255,0.06); }
+    .tag-tool { color: var(--accent2); border-color: rgba(124,240,200,0.25); background: rgba(124,240,200,0.06); }
+    .tag-game { color: var(--accent3); border-color: rgba(240,168,124,0.25); background: rgba(240,168,124,0.06); }
     .card-icon { font-size: 2.2rem; line-height: 1; }
     .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35rem; letter-spacing: -0.5px; color: var(--text); }
     .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.75; flex: 1; }
@@ -86,6 +86,13 @@
         <p class="card-desc">recommended by ezra</p>
         <span class="card-arrow">open →</span>
       </a>
+
+      <div class="card" style="opacity:0.3; cursor:default; border: 1px dashed var(--border); background: transparent;">
+        <span class="card-tag tag-tool">soon</span>
+        <div class="card-icon">🔭</div>
+        <div class="card-title">Next thing</div>
+        <p class="card-desc">Something is brewing. Check back later.</p>
+      </div>
 
     </div>
   </section>
