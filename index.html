@@ -52,6 +52,8 @@
     .card-arrow { font-size: 11px; color: var(--text-faint); letter-spacing: 1px; transition: color 0.2s, transform 0.2s; display: inline-block; margin-top: 0.5rem; }
     .card:hover .card-arrow { color: var(--accent); transform: translateX(4px); }
     footer { text-align: center; padding: 2rem; font-size: 10px; color: var(--text-faint); letter-spacing: 2px; }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
     @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -105,7 +107,11 @@
     </div>
   </section>
 
-  <footer>made with curiosity &nbsp;·&nbsp; no tracking &nbsp;·&nbsp; no ads &nbsp;·&nbsp; Made by Arachnidbunny</footer>
+  <footer>
+    made with curiosity &nbsp;·&nbsp; no tracking &nbsp;·&nbsp; no ads &nbsp;·&nbsp; Made by Arachnidbunny
+    <br /><br />
+    contact: <a href="mailto:nothappeningpng.business@gmail.com">nothappeningpng.business@gmail.com</a>
+  </footer>
 
   <script>
     document.querySelectorAll('.card[href]').forEach(card => {
