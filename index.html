@@ -8,32 +8,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface2: #18181f;
-      --border: rgba(255,255,255,0.07);
-      --border-hover: rgba(255,255,255,0.18);
-      --text: #e8e6f0;
-      --text-muted: #8882a0;
-      --text-faint: #443f58;
-      --accent: #c8b4ff;
-      --accent2: #7cf0c8;
-      --accent3: #f0a87c;
+      --bg: #0a0a0f; --surface: #111118; --surface2: #18181f;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.18);
+      --text: #e8e6f0; --text-muted: #8882a0; --text-faint: #443f58;
+      --accent: #c8b4ff; --accent2: #7cf0c8; --accent3: #f0a87c;
     }
-
     html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── NOISE OVERLAY ── */
+    body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden; }
     body::before {
       content: '';
       position: fixed;
@@ -43,212 +25,37 @@
       pointer-events: none;
       z-index: 999;
     }
-
-    /* ── HERO ── */
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 4rem 2rem 2rem;
-      text-align: center;
-      position: relative;
-    }
-
-    .hero-glow {
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(200,180,255,0.06) 0%, transparent 70%);
-      pointer-events: none;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -60%);
-    }
-
-    .hero-eyebrow {
-      font-size: 11px;
-      letter-spacing: 4px;
-      color: var(--text-faint);
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-    }
-
-    .hero-title {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: clamp(3.5rem, 12vw, 8rem);
-      line-height: 0.9;
-      letter-spacing: -3px;
-      color: var(--text);
-      margin-bottom: 1.5rem;
-      position: relative;
-    }
-
-    .hero-title span {
-      display: block;
-      color: var(--accent);
-    }
-
-    .hero-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      max-width: 380px;
-      line-height: 1.8;
-      margin-bottom: 3rem;
-    }
-
-    .scroll-hint {
-      font-size: 10px;
-      color: var(--text-faint);
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      animation: nudge 2.4s ease-in-out infinite;
-      cursor: default;
-    }
-
-    @keyframes nudge {
-      0%, 100% { transform: translateY(0); opacity: 0.4; }
-      50% { transform: translateY(6px); opacity: 0.9; }
-    }
-
-    /* ── PROJECTS GRID ── */
-    .projects-section {
-      padding: 4rem 2rem 8rem;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .section-label {
-      font-size: 10px;
-      letter-spacing: 3px;
-      color: var(--text-faint);
-      text-transform: uppercase;
-    }
-
-    .section-line {
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    /* ── PROJECT CARD ── */
-    .card {
-      background: var(--surface);
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      text-decoration: none;
-      color: inherit;
-      transition: background 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.04) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-
-    .card:hover {
-      background: var(--surface2);
-    }
-
-    .card:hover::before {
-      opacity: 1;
-    }
-
-    .card-tag {
-      display: inline-block;
-      font-size: 9px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 4px;
-      border: 1px solid;
-      width: fit-content;
-    }
-
+    .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 4rem 2rem 2rem; text-align: center; position: relative; }
+    .hero-glow { position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(200,180,255,0.06) 0%, transparent 70%); pointer-events: none; top: 50%; left: 50%; transform: translate(-50%, -60%); }
+    .hero-eyebrow { font-size: 11px; letter-spacing: 4px; color: var(--text-faint); text-transform: uppercase; margin-bottom: 1.5rem; }
+    .hero-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(3.5rem, 12vw, 8rem); line-height: 0.9; letter-spacing: -3px; color: var(--text); margin-bottom: 1.5rem; position: relative; }
+    .hero-title span { display: block; color: var(--accent); }
+    .hero-sub { font-size: 13px; color: var(--text-muted); max-width: 380px; line-height: 1.8; margin-bottom: 3rem; }
+    .scroll-hint { font-size: 10px; color: var(--text-faint); letter-spacing: 3px; text-transform: uppercase; animation: nudge 2.4s ease-in-out infinite; cursor: default; }
+    @keyframes nudge { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(6px); opacity: 0.9; } }
+    .projects-section { padding: 4rem 2rem 8rem; max-width: 1100px; margin: 0 auto; }
+    .section-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2.5rem; }
+    .section-label { font-size: 10px; letter-spacing: 3px; color: var(--text-faint); text-transform: uppercase; }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .card { background: var(--surface); padding: 2rem; display: flex; flex-direction: column; gap: 1rem; text-decoration: none; color: inherit; transition: background 0.2s; position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.04) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .card:hover { background: var(--surface2); }
+    .card:hover::before { opacity: 1; }
+    .card-tag { display: inline-block; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; border: 1px solid; width: fit-content; }
     .tag-ai      { color: var(--accent);  border-color: rgba(200,180,255,0.25); background: rgba(200,180,255,0.06); }
     .tag-tool    { color: var(--accent2); border-color: rgba(124,240,200,0.25); background: rgba(124,240,200,0.06); }
     .tag-game    { color: var(--accent3); border-color: rgba(240,168,124,0.25); background: rgba(240,168,124,0.06); }
-
-    .card-icon {
-      font-size: 2.2rem;
-      line-height: 1;
-    }
-
-    .card-title {
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 1.35rem;
-      letter-spacing: -0.5px;
-      color: var(--text);
-    }
-
-    .card-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.75;
-      flex: 1;
-    }
-
-    .card-arrow {
-      font-size: 11px;
-      color: var(--text-faint);
-      letter-spacing: 1px;
-      transition: color 0.2s, transform 0.2s;
-      display: inline-block;
-      margin-top: 0.5rem;
-    }
-
-    .card:hover .card-arrow {
-      color: var(--accent);
-      transform: translateX(4px);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 10px;
-      color: var(--text-faint);
-      letter-spacing: 2px;
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      .grid { grid-template-columns: 1fr; }
-    }
+    .card-icon { font-size: 2.2rem; line-height: 1; }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35rem; letter-spacing: -0.5px; color: var(--text); }
+    .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.75; flex: 1; }
+    .card-arrow { font-size: 11px; color: var(--text-faint); letter-spacing: 1px; transition: color 0.2s, transform 0.2s; display: inline-block; margin-top: 0.5rem; }
+    .card:hover .card-arrow { color: var(--accent); transform: translateX(4px); }
+    footer { text-align: center; padding: 2rem; font-size: 10px; color: var(--text-faint); letter-spacing: 2px; }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
   <section class="hero">
     <div class="hero-glow"></div>
     <div class="hero-eyebrow">a collection of things</div>
@@ -262,14 +69,7 @@
       <span class="section-label">// projects</span>
       <div class="section-line"></div>
     </div>
-
     <div class="grid" id="project-grid">
-
-      <!-- ═══════════════════════════════════════════════════
-           ADD NEW PROJECTS HERE — copy one <a class="card"> block
-           and fill in: href, tag, icon, title, description.
-           Tag classes: tag-ai  |  tag-tool  |  tag-game
-      ════════════════════════════════════════════════════ -->
 
       <a class="card" href="./projects/scp-914/">
         <span class="card-tag tag-ai">AI</span>
@@ -279,28 +79,25 @@
         <span class="card-arrow">open →</span>
       </a>
 
-      <!-- PLACEHOLDER — delete this card when you have a real project -->
-      <div class="card" style="opacity:0.3; cursor:default; border: 1px dashed var(--border); background: transparent;">
-        <span class="card-tag tag-tool">soon</span>
-        <div class="card-icon">🔭</div>
-        <div class="card-title">Next thing</div>
-        <p class="card-desc">Something is brewing. Check back later.</p>
-      </div>
+      <a class="card" href="./projects/sharj/">
+        <span class="card-tag tag-game">🦈</span>
+        <div class="card-icon">🦈</div>
+        <div class="card-title">sharj</div>
+        <p class="card-desc">recommended by ezra</p>
+        <span class="card-arrow">open →</span>
+      </a>
 
     </div>
   </section>
 
-  <footer>made with curiosity &nbsp;·&nbsp; no tracking &nbsp;·&nbsp; no ads</footer>
+  <footer>made with curiosity &nbsp;·&nbsp; no tracking &nbsp;·&nbsp; no ads &nbsp;·&nbsp; Made by Arachnidbunny</footer>
 
   <script>
-    // Subtle mouse-glow effect on cards
     document.querySelectorAll('.card[href]').forEach(card => {
       card.addEventListener('mousemove', e => {
         const r = card.getBoundingClientRect();
-        const x = ((e.clientX - r.left) / r.width * 100).toFixed(1);
-        const y = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
-        card.style.setProperty('--mx', x + '%');
-        card.style.setProperty('--my', y + '%');
+        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+        card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%');
       });
     });
   </script>
