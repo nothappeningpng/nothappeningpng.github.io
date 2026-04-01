@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading...</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --xp-blue: #0a246a;
+      --xp-titlebar: linear-gradient(180deg, #4a90d9 0%, #2164c0 100%);
+      --xp-titlebar-inactive: linear-gradient(180deg, #9db3cc 0%, #738aa8 100%);
+      --xp-taskbar: linear-gradient(180deg, #245edb 0%, #1a4fa0 50%, #1d56b0 100%);
+      --xp-window-bg: #ece9d8;
+      --xp-green: linear-gradient(180deg, #4db54d 0%, #3a9a3a 100%);
+      --font: Tahoma, 'MS Sans Serif', Arial, sans-serif;
+      --shadow: 3px 3px 10px rgba(0,0,0,0.45);
+    }
+    html, body { height: 100%; overflow: hidden; user-select: none; }
+    body { font-family: var(--font); font-size: 11px; background: #000; cursor: default; }
+
+    /* BOOT */
+    #boot {
+      position: fixed; inset: 0; background: #000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; color: #fff; gap: 6px;
+    }
+    .boot-logo { font-size: 28px; font-weight: bold; color: #fff; letter-spacing: 1px; }
+    .boot-logo b { color: #58a4f4; }
+    .boot-edition { font-size: 11px; color: #aaa; letter-spacing: 3px; margin-bottom: 30px; }
+    .boot-bar-wrap { display: flex; gap: 3px; margin-top: 8px; }
+    .boot-block { width: 18px; height: 14px; background: #1a5fbf; opacity: 0.2; transition: opacity 0.15s; }
+    .boot-block.lit { opacity: 1; }
+    .boot-msg { font-size: 10px; color: #555; margin-top: 12px; min-height: 14px; }
+
+    /* DESKTOP */
+    #desktop {
+      position: fixed; inset: 0 0 30px 0;
+      background: #1f6496;
+      background-image: radial-gradient(ellipse at 60% 40%, #2a7abf 0%, #1a5280 60%, #0d3355 100%);
+      display: none;
+    }
+
+    /* DESKTOP ICONS */
+    .d-icon {
+      position: absolute; width: 70px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 4px; border: 1px solid transparent; border-radius: 2px; cursor: pointer;
+    }
+    .d-icon:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); }
+    .d-icon .di { font-size: 30px; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.6)); }
+    .d-icon .dl { color: #fff; font-size: 11px; text-align: center; line-height: 1.25; word-break: break-word;
+      text-shadow: 1px 1px 3px #000, 0 0 4px #000; }
+
+    /* TASKBAR */
+    #taskbar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 30px;
+      background: var(--xp-taskbar); border-top: 1px solid #5a8fd4;
+      display: flex; align-items: center; z-index: 8000;
+    }
+    #start-btn {
+      height: 100%; padding: 0 14px 0 8px; border: none;
+      background: var(--xp-green); border-radius: 0 12px 12px 0;
+      color: #fff; font-family: var(--font); font-size: 13px; font-weight: bold; font-style: italic;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 2px 0 4px rgba(0,0,0,0.3);
+      flex-shrink: 0; letter-spacing: 0.5px;
+    }
+    #start-btn:hover { filter: brightness(1.12); }
+    #taskbar-wins { flex: 1; display: flex; align-items: center; gap: 3px; padding: 0 6px; overflow: hidden; }
+    .tb-btn {
+      height: 22px; padding: 0 8px; min-width: 80px; max-width: 140px;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; font-family: var(--font); font-size: 11px; cursor: pointer;
+      text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+      border-radius: 2px; display: flex; align-items: center; gap: 4px;
+    }
+    .tb-btn:hover { background: rgba(255,255,255,0.28); }
+    .tb-btn.focused { background: rgba(0,0,0,0.2); border-color: rgba(0,0,0,0.25); }
+    #tray {
+      display: flex; align-items: center; gap: 8px; padding: 0 10px;
+      background: rgba(0,0,40,0.35); height: 100%; border-left: 1px solid rgba(255,255,255,0.1);
+      font-size: 11px; color: #fff; flex-shrink: 0;
+    }
+
+    /* START MENU */
+    #start-menu {
+      position: fixed; bottom: 30px; left: 0; width: 290px;
+      background: #fff; border: 2px solid #0a246a; border-radius: 8px 8px 0 0;
+      box-shadow: var(--shadow); display: none; z-index: 9000; overflow: hidden;
+    }
+    .sm-head { background: var(--xp-titlebar); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+    .sm-avatar { font-size: 36px; }
+    .sm-name { color: #fff; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+    .sm-name small { display: block; font-size: 10px; font-weight: normal; color: #c8ddf5; }
+    .sm-body { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid #d4e4f5; }
+    .sm-col { padding: 6px; }
+    .sm-col:first-child { border-right: 1px solid #ddd; }
+    .sm-item {
+      display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+      cursor: pointer; border-radius: 3px; font-size: 12px;
+    }
+    .sm-item:hover { background: #3169c4; color: #fff; }
+    .sm-sep { height: 1px; background: #ccc; margin: 5px 4px; }
+    .sm-foot { background: #d3e4f5; border-top: 1px solid #a5bcd4; display: flex; justify-content: flex-end; padding: 4px 8px; gap: 2px; }
+    .sm-foot-btn { padding: 3px 10px; cursor: pointer; font-size: 11px; border-radius: 2px; display: flex; align-items: center; gap: 4px; }
+    .sm-foot-btn:hover { background: #3169c4; color: #fff; }
+
+    /* WINDOWS */
+    .window {
+      position: absolute; background: var(--xp-window-bg);
+      border: 2px solid #0a246a; border-radius: 6px 6px 3px 3px;
+      box-shadow: var(--shadow); min-width: 220px; min-height: 120px;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .window.inactive { border-color: #7f9db9; }
+    .win-title {
+      background: var(--xp-titlebar); padding: 3px 5px;
+      display: flex; align-items: center; gap: 5px; cursor: move; flex-shrink: 0;
+      border-radius: 4px 4px 0 0;
+    }
+    .window.inactive .win-title { background: var(--xp-titlebar-inactive); }
+    .wt-icon { font-size: 14px; }
+    .wt-label { color: #fff; font-size: 12px; font-weight: bold; flex: 1; text-shadow: 1px 1px 1px rgba(0,0,0,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .window.inactive .wt-label { color: #cde; }
+    .wt-btns { display: flex; gap: 2px; flex-shrink: 0; }
+    .wt-btn {
+      width: 21px; height: 21px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.4);
+      font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font); color: #000; font-weight: bold;
+    }
+    .wt-min { background: linear-gradient(180deg,#fff 0%,#d4d0c8 100%); }
+    .wt-max { background: linear-gradient(180deg,#fff 0%,#d4d0c8 100%); }
+    .wt-cls { background: linear-gradient(180deg,#f08070 0%,#d03020 100%); color: #fff; }
+    .wt-btn:hover { filter: brightness(1.15); }
+    .wt-btn:active { filter: brightness(0.9); }
+
+    /* MENU BAR */
+    .win-menu { background: #ece9d8; border-bottom: 1px solid #aca899; display: flex; padding: 1px 2px; flex-shrink: 0; }
+    .wm-item { padding: 2px 6px; cursor: pointer; border-radius: 2px; font-size: 11px; }
+    .wm-item:hover { background: #3169c4; color: #fff; }
+
+    /* WINDOW BODY */
+    .win-body { flex: 1; overflow: auto; padding: 8px; font-size: 12px; }
+    .win-body::-webkit-scrollbar { width: 16px; }
+    .win-body::-webkit-scrollbar-track { background: #f0ede0; border-left: 1px solid #ccc; }
+    .win-body::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#d4d0c8,#b0ad9f); border: 1px solid #888; }
+
+    /* ADDRESSBAR */
+    .win-addr { background: #fff; border: 1px inset #888; margin: 3px; padding: 2px 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+    .addr-label { color: #666; flex-shrink: 0; }
+    .addr-input { flex: 1; border: none; outline: none; font-family: var(--font); font-size: 11px; background: transparent; }
+
+    /* FILE EXPLORER */
+    .explorer-layout { display: flex; height: 100%; }
+    .explorer-sidebar { width: 140px; background: #dce8f5; border-right: 1px solid #b0c8e0; padding: 6px; flex-shrink: 0; font-size: 11px; }
+    .sidebar-section { margin-bottom: 10px; }
+    .sidebar-title { font-weight: bold; color: #0a246a; font-size: 11px; margin-bottom: 4px; }
+    .sidebar-item { padding: 2px 4px; cursor: pointer; border-radius: 2px; display: flex; align-items: center; gap: 4px; }
+    .sidebar-item:hover { background: rgba(49,105,196,0.2); }
+    .explorer-main { flex: 1; padding: 6px; overflow: auto; }
+    .file-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .file-item {
+      width: 72px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 4px; cursor: pointer; border: 1px solid transparent; border-radius: 2px; text-align: center;
+    }
+    .file-item:hover { background: #cce4ff; border-color: #6ba3d6; }
+    .file-item.selected { background: #3169c4; color: #fff; border-color: #1a4fa0; }
+    .file-item .fi { font-size: 28px; }
+    .file-item .fn { font-size: 10px; line-height: 1.2; word-break: break-all; }
+
+    /* NOTEPAD */
+    .notepad-body { display: flex; flex-direction: column; height: 100%; }
+    .notepad-textarea {
+      flex: 1; width: 100%; border: none; outline: none; resize: none;
+      font-family: 'Courier New', monospace; font-size: 12px; padding: 4px;
+      background: #fff; line-height: 1.5;
+    }
+    .notepad-status { background: #ece9d8; border-top: 1px solid #ccc; padding: 1px 6px; font-size: 10px; color: #666; flex-shrink: 0; }
+
+    /* TERMINAL */
+    .terminal-body {
+      background: #000; color: #c0c0c0; font-family: 'Courier New', monospace;
+      font-size: 12px; padding: 6px; overflow-y: auto; height: 100%;
+    }
+    .term-line { line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+    .term-line.cmd { color: #fff; }
+    .term-line.err { color: #ff6060; }
+    .term-line.ok  { color: #60ff60; }
+    .term-line.warn { color: #ffcc00; }
+    .term-input-row { display: flex; align-items: center; margin-top: 2px; }
+    .term-prompt { color: #ffcc00; white-space: nowrap; flex-shrink: 0; }
+    .term-input { background: transparent; border: none; outline: none; color: #fff; font-family: 'Courier New', monospace; font-size: 12px; flex: 1; caret-color: #fff; }
+
+    /* PAINT */
+    .paint-toolbar { background: #ece9d8; border-bottom: 1px solid #ccc; padding: 3px 6px; display: flex; gap: 4px; flex-wrap: wrap; align-items: center; flex-shrink: 0; }
+    .paint-tool { padding: 2px 8px; border: 1px solid #999; background: #fff; cursor: pointer; font-size: 11px; border-radius: 1px; }
+    .paint-tool:hover { background: #d4e8ff; }
+    .paint-tool.active { background: #aac4e8; border-color: #3169c4; }
+    .paint-canvas-wrap { flex: 1; overflow: auto; background: #808080; display: flex; align-items: flex-start; justify-content: flex-start; padding: 6px; }
+    canvas#paint-canvas { background: #fff; cursor: crosshair; display: block; }
+
+    /* DIALOG / ERROR */
+    .dialog {
+      position: fixed; background: #ece9d8; border: 2px solid #0a246a;
+      border-radius: 6px 6px 3px 3px; box-shadow: var(--shadow);
+      z-index: 10000; min-width: 280px; max-width: 420px;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .dialog .win-title { cursor: default; }
+    .dialog-body { padding: 16px; display: flex; gap: 14px; align-items: flex-start; }
+    .dialog-icon { font-size: 36px; flex-shrink: 0; }
+    .dialog-text { font-size: 12px; line-height: 1.6; color: #000; }
+    .dialog-btns { display: flex; justify-content: center; gap: 8px; padding: 8px 16px 12px; }
+    .dialog-btn {
+      padding: 4px 20px; border: 1px solid #888; background: linear-gradient(180deg,#fff 0%,#d4d0c8 100%);
+      font-family: var(--font); font-size: 12px; cursor: pointer; border-radius: 3px; min-width: 75px;
+    }
+    .dialog-btn:hover { background: linear-gradient(180deg,#ddeeff 0%,#b8d4ee 100%); border-color: #3169c4; }
+    .dialog-btn:active { background: #b0c8e4; }
+
+    /* CONTEXT MENU */
+    #ctx-menu {
+      position: fixed; background: #fff; border: 1px solid #999;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3); z-index: 11000;
+      display: none; min-width: 160px; padding: 2px 0;
+    }
+    .ctx-item { padding: 4px 20px; cursor: pointer; font-size: 12px; }
+    .ctx-item:hover { background: #3169c4; color: #fff; }
+    .ctx-sep { height: 1px; background: #ccc; margin: 2px 0; }
+
+    /* RECYCLE BIN CONTENTS */
+    .recycle-item { padding: 4px 8px; display: flex; align-items: center; gap: 8px; font-size: 12px; border-bottom: 1px solid #e0ddd0; }
+    .recycle-item:hover { background: #cce4ff; }
+
+    /* BSOD */
+    #bsod {
+      position: fixed; inset: 0; background: #0000aa; color: #fff;
+      font-family: 'Courier New', monospace; font-size: 16px;
+      display: none; z-index: 99999; padding: 40px; line-height: 1.8;
+    }
+    #bsod h2 { font-size: 20px; margin-bottom: 20px; background: #aaaaaa; color: #0000aa; padding: 2px 6px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <div class="boot-logo">🪟 <b>Wind</b>ows <b>XP</b></div>
+  <div class="boot-edition">Professional Edition (Slightly Off)</div>
+  <div class="boot-bar-wrap" id="boot-blocks">
+    <div class="boot-block"></div><div class="boot-block"></div><div class="boot-block"></div>
+    <div class="boot-block"></div><div class="boot-block"></div><div class="boot-block"></div>
+    <div class="boot-block"></div><div class="boot-block"></div><div class="boot-block"></div>
+  </div>
+  <div class="boot-msg" id="boot-msg">Checking file system...</div>
+</div>
+
+<!-- BSOD -->
+<div id="bsod">
+  <h2>A problem has been detected and Windows has been shut down</h2>
+  <p id="bsod-msg"></p>
+  <br>
+  <p>If this is the first time you've seen this stop error screen, that's your fault.</p>
+  <br>
+  <p>Technical information:</p>
+  <p id="bsod-code">*** STOP: 0x0000007E</p>
+  <br>
+  <p>Beginning dump of physical memory...<br>Physical memory dump complete.<br>Contact your system administrator or someone who actually knows what they're doing.</p>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop" ondblclick="deselectAll()" oncontextmenu="showCtx(event)"></div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <button id="start-btn" onclick="toggleStart()">🪟 start</button>
+  <div id="taskbar-wins"></div>
+  <div id="tray">
+    <span>🔊</span>
+    <span>🌐</span>
+    <span id="clock">12:00 PM</span>
+  </div>
+</div>
+
+<!-- START MENU -->
+<div id="start-menu">
+  <div class="sm-head">
+    <div class="sm-avatar">👤</div>
+    <div class="sm-name">User<small>definitely not being watched</small></div>
+  </div>
+  <div class="sm-body">
+    <div class="sm-col">
+      <div class="sm-item" onclick="openWindow('notepad'); closeStart()">📝 <span>Notepad</span></div>
+      <div class="sm-item" onclick="openWindow('paint'); closeStart()">🎨 <span>MS Paint</span></div>
+      <div class="sm-item" onclick="openWindow('terminal'); closeStart()">🖥️ <span>Command Prompt</span></div>
+      <div class="sm-sep"></div>
+      <div class="sm-item" onclick="openWindow('explorer'); closeStart()">📁 <span>My Documents</span></div>
+      <div class="sm-item" onclick="openWindow('recycle'); closeStart()">🗑️ <span>Recycle Bin</span></div>
+    </div>
+    <div class="sm-col">
+      <div class="sm-item" onclick="openWindow('browser'); closeStart()">🌐 <span>Internet</span></div>
+      <div class="sm-item" onclick="showError('Windows Update could not connect to the server. The server said \"please stop\".')">🔄 <span>Windows Update</span></div>
+      <div class="sm-item" onclick="showError('Control Panel has been removed by your employer, your mother, or a third party. We are not sure which.')">⚙️ <span>Control Panel</span></div>
+      <div class="sm-sep"></div>
+      <div class="sm-item" onclick="showError('Search is currently unavailable because it found something it wasn\'t supposed to and has asked not to be used again.')">🔍 <span>Search</span></div>
+      <div class="sm-item" onclick="showError('Help and Support could not load. Ironically.')">❓ <span>Help</span></div>
+    </div>
+  </div>
+  <div class="sm-foot">
+    <div class="sm-foot-btn" onclick="showError('Log Off failed. You are permanent now.')">🚪 Log Off</div>
+    <div class="sm-foot-btn" onclick="fakeBsod()">⏻ Turn Off</div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="hideCtx()">Arrange Icons By ▶</div>
+  <div class="ctx-item" onclick="hideCtx(); showError('Refresh failed. Nothing changed. This is your life now.')">Refresh</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="hideCtx(); showError('New Folder could not be created. You already have too many things. Simplify your life.')">New Folder</div>
+  <div class="ctx-item" onclick="hideCtx(); showError('Paste failed because the clipboard is emotionally unavailable right now.')">Paste</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="hideCtx(); openWindow('properties')">Properties</div>
+</div>
+
+<script>
+// ── BOOT SEQUENCE ──
+const bootMsgs = [
+  'Checking file system...',
+  'Loading personal data...',
+  'Verifying that you exist...',
+  'Calibrating disappointment levels...',
+  'Installing drivers for your feelings...',
+  'Almost done. Please do not unplug your hopes.',
+  'Starting Windows...',
+];
+const blocks = document.querySelectorAll('.boot-block');
+let bi = 0;
+function bootTick() {
+  if (bi < blocks.length) {
+    blocks[bi].classList.add('lit');
+    document.getElementById('boot-msg').textContent = bootMsgs[Math.floor(bi / blocks.length * bootMsgs.length)] || '';
+    bi++;
+    setTimeout(bootTick, 260 + Math.random() * 180);
+  } else {
+    setTimeout(finishBoot, 600);
+  }
+}
+function finishBoot() {
+  document.getElementById('boot').style.display = 'none';
+  document.getElementById('desktop').style.display = 'block';
+  document.title = 'My Computer';
+  setupDesktop();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setTimeout(() => showError("Windows has detected that this is your first time using this computer.\n\nWe don't know how you got here, but we're a little worried about you."), 2000);
+}
+setTimeout(bootTick, 500);
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  let h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('clock').textContent = `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+// ── DESKTOP ICONS ──
+const ICONS = [
+  { id:'mycomp',   icon:'🖥️',  label:'My Computer',          x:20,  y:20,  action:() => openWindow('explorer') },
+  { id:'docs',     icon:'📁',  label:'My Documents',         x:20,  y:110, action:() => openWindow('explorer') },
+  { id:'recycle',  icon:'🗑️',  label:'Recycle Bin (Full)',   x:20,  y:200, action:() => openWindow('recycle') },
+  { id:'notepad',  icon:'📝',  label:'Notepad',              x:20,  y:290, action:() => openWindow('notepad') },
+  { id:'ie',       icon:'🌐',  label:'Internet Explorer',    x:20,  y:380, action:() => openWindow('browser') },
+  { id:'secret',   icon:'🔒',  label:'DO NOT OPEN',          x:110, y:20,  action:() => openWindow('secret') },
+  { id:'virus',    icon:'📄',  label:'definitely_not_a_virus.exe', x:110, y:110, action:() => showError('This file tried to open itself but got scared and gave up.') },
+  { id:'paint',    icon:'🎨',  label:'Paint',                x:110, y:200, action:() => openWindow('paint') },
+];
+
+function setupDesktop() {
+  const desktop = document.getElementById('desktop');
+  ICONS.forEach(ic => {
+    const el = document.createElement('div');
+    el.className = 'd-icon';
+    el.style.left = ic.x + 'px';
+    el.style.top = ic.y + 'px';
+    el.innerHTML = `<div class="di">${ic.icon}</div><div class="dl">${ic.label}</div>`;
+    el.ondblclick = (e) => { e.stopPropagation(); ic.action(); };
+    el.onclick = (e) => { e.stopPropagation(); deselectAll(); el.classList.add('selected'); };
+    desktop.appendChild(el);
+  });
+}
+
+function deselectAll() { document.querySelectorAll('.d-icon').forEach(e => e.classList.remove('selected')); }
+
+// ── CONTEXT MENU ──
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+function showCtx(e) {
+  e.preventDefault(); e.stopPropagation();
+  const m = document.getElementById('ctx-menu');
+  m.style.display = 'block';
+  m.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
+  m.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+}
+function hideCtx() { document.getElementById('ctx-menu').style.display = 'none'; }
+document.addEventListener('click', hideCtx);
+
+// ── START MENU ──
+function toggleStart() {
+  const m = document.getElementById('start-menu');
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+function closeStart() { document.getElementById('start-menu').style.display = 'none'; }
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('start-menu').contains(e.target) && e.target.id !== 'start-btn')
+    closeStart();
+});
+
+// ── WINDOWS ──
+let zTop = 100;
+const openWindows = {};
+
+const WINDOW_DEFS = {
+  explorer: { title:'My Documents', icon:'📁', w:580, h:380, content: buildExplorer },
+  notepad:  { title:'Notepad — untitled.txt', icon:'📝', w:480, h:340, content: buildNotepad },
+  terminal: { title:'Command Prompt', icon:'🖥️', w:520, h:340, content: buildTerminal },
+  browser:  { title:'Internet Explorer', icon:'🌐', w:600, h:400, content: buildBrowser },
+  recycle:  { title:'Recycle Bin', icon:'🗑️', w:460, h:300, content: buildRecycle },
+  paint:    { title:'Paint', icon:'🎨', w:580, h:420, content: buildPaint },
+  secret:   { title:'DO NOT OPEN — System32', icon:'🔒', w:420, h:300, content: buildSecret },
+  properties:{ title:'Desktop Properties', icon:'⚙️', w:380, h:280, content: buildProperties },
+};
+
+function openWindow(id) {
+  closeStart();
+  if (openWindows[id]) { focusWindow(id); return; }
+  const def = WINDOW_DEFS[id];
+  if (!def) return;
+
+  const win = document.createElement('div');
+  win.className = 'window';
+  win.id = 'win-' + id;
+  win.style.width = def.w + 'px';
+  win.style.height = def.h + 'px';
+  win.style.left = (80 + Math.random() * 120) + 'px';
+  win.style.top  = (60 + Math.random() * 80) + 'px';
+  win.style.zIndex = ++zTop;
+
+  win.innerHTML = `
+    <div class="win-title" onmousedown="startDrag(event,'${id}')">
+      <span class="wt-icon">${def.icon}</span>
+      <span class="wt-label">${def.title}</span>
+      <div class="wt-btns">
+        <button class="wt-btn wt-min" onclick="minimizeWin('${id}')">_</button>
+        <button class="wt-btn wt-max">□</button>
+        <button class="wt-btn wt-cls" onclick="closeWindow('${id}')">✕</button>
+      </div>
+    </div>
+    <div class="win-menu">
+      <span class="wm-item">File</span>
+      <span class="wm-item">Edit</span>
+      <span class="wm-item">View</span>
+      <span class="wm-item" onclick="showError('Help could not load because it is also confused.')">Help</span>
+    </div>
+  `;
+
+  const body = document.createElement('div');
+  body.className = 'win-body';
+  body.style.padding = '0';
+  body.style.display = 'flex';
+  body.style.flexDirection = 'column';
+  def.content(body);
+  win.appendChild(body);
+
+  win.onclick = () => focusWindow(id);
+  document.getElementById('desktop').appendChild(win);
+  openWindows[id] = { el: win, minimized: false, title: def.title, icon: def.icon };
+  addTaskbarBtn(id, def.icon, def.title);
+  focusWindow(id);
+}
+
+function focusWindow(id) {
+  Object.keys(openWindows).forEach(k => {
+    const w = openWindows[k].el;
+    if (w) w.classList.add('inactive');
+    const btn = document.getElementById('tb-' + k);
+    if (btn) btn.classList.remove('focused');
+  });
+  const w = openWindows[id];
+  if (!w) return;
+  w.el.classList.remove('inactive');
+  w.el.style.zIndex = ++zTop;
+  if (w.minimized) {
+    w.el.style.display = 'flex';
+    w.minimized = false;
+  }
+  const btn = document.getElementById('tb-' + id);
+  if (btn) btn.classList.add('focused');
+}
+
+function closeWindow(id) {
+  const w = openWindows[id];
+  if (!w) return;
+  w.el.remove();
+  delete openWindows[id];
+  const btn = document.getElementById('tb-' + id);
+  if (btn) btn.remove();
+}
+
+function minimizeWin(id) {
+  const w = openWindows[id];
+  if (!w) return;
+  w.el.style.display = 'none';
+  w.minimized = true;
+  const btn = document.getElementById('tb-' + id);
+  if (btn) btn.classList.remove('focused');
+}
+
+function addTaskbarBtn(id, icon, title) {
+  const btn = document.createElement('button');
+  btn.className = 'tb-btn focused';
+  btn.id = 'tb-' + id;
+  btn.innerHTML = icon + ' ' + title;
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    const w = openWindows[id];
+    if (!w) return;
+    if (w.minimized) { focusWindow(id); }
+    else if (!w.el.classList.contains('inactive')) { minimizeWin(id); }
+    else { focusWindow(id); }
+  };
+  document.getElementById('taskbar-wins').appendChild(btn);
+}
+
+// ── DRAG ──
+let dragging = null, dragOX = 0, dragOY = 0;
+function startDrag(e, id) {
+  if (e.target.classList.contains('wt-btn')) return;
+  dragging = id;
+  const el = openWindows[id].el;
+  dragOX = e.clientX - el.offsetLeft;
+  dragOY = e.clientY - el.offsetTop;
+  focusWindow(id);
+}
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const el = openWindows[dragging]?.el;
+  if (!el) return;
+  el.style.left = Math.max(0, Math.min(e.clientX - dragOX, window.innerWidth - 100)) + 'px';
+  el.style.top  = Math.max(0, Math.min(e.clientY - dragOY, window.innerHeight - 60)) + 'px';
+});
+document.addEventListener('mouseup', () => dragging = null);
+
+// ── WINDOW CONTENT BUILDERS ──
+
+function buildExplorer(body) {
+  body.style.padding = '0';
+  body.innerHTML = `
+    <div class="win-addr"><span class="addr-label">Address:</span><input class="addr-input" value="C:\\Documents and Settings\\User\\My Documents" readonly /></div>
+    <div class="explorer-layout" style="flex:1;overflow:hidden;">
+      <div class="explorer-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">📂 Folders</div>
+          <div class="sidebar-item">🖥️ My Computer</div>
+          <div class="sidebar-item">📁 My Documents</div>
+          <div class="sidebar-item">🖼️ My Pictures</div>
+          <div class="sidebar-item">🎵 My Music</div>
+          <div class="sidebar-item">🗑️ Recycle Bin</div>
+        </div>
+      </div>
+      <div class="explorer-main">
+        <div class="file-grid" id="file-grid"></div>
+      </div>
+    </div>
+  `;
+  const files = [
+    { icon:'📄', name:'homework_final_FINAL_v3_real.doc', action:()=>showError('This file cannot be opened because it knows what you wrote in it.') },
+    { icon:'📄', name:'taxes_2019.xls', action:()=>showError('Access denied. The IRS has already seen this.') },
+    { icon:'🖼️', name:'photo_001.jpg', action:()=>showError('This image could not be displayed. You are not ready.') },
+    { icon:'📄', name:'passwords.txt', action:()=>showError('File opened successfully.\n\npassword: password\nbank: password1\nemail: Password') },
+    { icon:'📄', name:'dear_diary_DO_NOT_READ.txt', action:()=>openNotepadWith('dear_diary_DO_NOT_READ.txt', "October 14th\n\nI think the computer has been reading my files.\n\nIt looked at me differently today.\n\n- [REDACTED]") },
+    { icon:'📁', name:'System32 (DO NOT DELETE)', action:()=>showError('You deleted System32 once in 2008 by accident and we have not forgotten.') },
+    { icon:'📄', name:'resume_SEND_THIS_ONE.doc', action:()=>showError('This file has not been opened since 2021. We think you already know why.') },
+    { icon:'🎵', name:'my_mixtape.mp3', action:()=>showError('Windows Media Player cannot play this file.\n\nNot because of a codec issue. It just does not want to.') },
+    { icon:'📄', name:'grocery_list.txt', action:()=>openNotepadWith('grocery_list.txt', "- milk\n- eggs\n- bread\n- closure\n- milk (forgot the first one)\n- something that will make everything okay") },
+    { icon:'📄', name:'backup_backup_FINAL.zip', action:()=>showError('This archive is corrupted.\n\nJust like all the others.') },
+  ];
+  const grid = body.querySelector('#file-grid');
+  files.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'file-item';
+    el.innerHTML = `<div class="fi">${f.icon}</div><div class="fn">${f.name}</div>`;
+    el.ondblclick = f.action;
+    el.onclick = () => { body.querySelectorAll('.file-item').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); };
+    grid.appendChild(el);
+  });
+}
+
+function buildNotepad(body) {
+  body.style.padding = '0';
+  body.innerHTML = `
+    <div class="notepad-body">
+      <textarea class="notepad-textarea" id="notepad-ta" spellcheck="false"></textarea>
+      <div class="notepad-status">Ln 1, Col 1 &nbsp;|&nbsp; 100% &nbsp;|&nbsp; Windows (CRLF) &nbsp;|&nbsp; UTF-8</div>
+    </div>
+  `;
+}
+
+function openNotepadWith(filename, content) {
+  openWindow('notepad');
+  setTimeout(() => {
+    const ta = document.getElementById('notepad-ta');
+    if (ta) ta.value = content;
+    const win = openWindows['notepad'];
+    if (win) win.el.querySelector('.wt-label').textContent = `Notepad — ${filename}`;
+  }, 50);
+}
+
+function buildTerminal(body) {
+  body.style.padding = '0';
+  body.style.background = '#000';
+  body.innerHTML = `
+    <div class="terminal-body" id="term-body">
+      <div class="term-line">Microsoft Windows XP [Version 5.1.2600] (Slightly Off Edition)</div>
+      <div class="term-line">(C) Copyright 1985-2001 Microsoft Corp. (We're not sure about the copyright either.)</div>
+      <div class="term-line">&nbsp;</div>
+      <div class="term-input-row">
+        <span class="term-prompt">C:\\&gt;&nbsp;</span>
+        <input class="term-input" id="term-input" autofocus autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+  `;
+  const input = body.querySelector('#term-input');
+  const tb = body.querySelector('#term-body');
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const cmd = input.value.trim();
+      input.value = '';
+      if (!cmd) return;
+      addTermLine(tb, `C:\\> ${cmd}`, 'cmd');
+      handleTermCmd(tb, cmd.toLowerCase());
+      setTimeout(() => { tb.scrollTop = tb.scrollHeight; }, 50);
+    }
+  });
+  body.onclick = () => input.focus();
+}
+
+function addTermLine(tb, text, cls) {
+  const line = document.createElement('div');
+  line.className = 'term-line ' + (cls || '');
+  line.textContent = text;
+  const inputRow = tb.querySelector('.term-input-row');
+  tb.insertBefore(line, inputRow);
+}
+
+const termCmds = {
+  'help':      () => ['Available commands: dir, cd, ping, ipconfig, tasklist, cls, format, shutdown, whoami, date, hack', 'ok'],
+  'dir':       () => ["Volume in drive C is 'DOCUMENTS'", " Directory of C:\\", '  03/14/2019  homework_final_FINAL_v3_real.doc', '  11/02/2021  resume_SEND_THIS_ONE.doc', '  ????????  ???.exe (this one just appeared)', '  <DIR>      System32 (please don\'t)', '', '  4 file(s)  1 folder(s)  0 regrets(s) — wait, one regret', 'ok'],
+  'whoami':    () => ['User.', 'Also, someone is reading this over your shoulder right now.', '', '(We checked. They are.)', 'warn'],
+  'ipconfig':  () => ['Windows IP Configuration', '', 'Ethernet adapter Local Area Connection:', '   IPv4 Address. . . . : 192.168.1.105', '   Subnet Mask . . . . : 255.255.255.0', '   Default Gateway . . : 192.168.1.1', '', 'Note: Your router has a name and it does not like you.', 'ok'],
+  'ping':      () => ['Pinging 8.8.8.8 with 32 bytes of data:', 'Reply from 8.8.8.8: bytes=32 time=14ms TTL=56', 'Reply from 8.8.8.8: bytes=32 time=12ms TTL=56', 'Reply from 8.8.8.8: bytes=32 time=9ms TTL=56', 'Reply from 8.8.8.8: bytes=32 time=11ms TTL=56', '', 'Ping statistics for 8.8.8.8:', '    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),', '    Although emotionally, the loss was significant.', 'ok'],
+  'tasklist':  () => ['Image Name         PID  Session Name   Mem Usage', '==========================================', 'System.exe         4    Console        240 K', 'svchost.exe        788  Console        4,812 K', 'explorer.exe       1632 Console        38,224 K', 'your_secrets.exe   ???  ???            ??? K (cannot read)', 'something.exe      666  Background     unknown', '', 'NOTE: One of these processes is not supposed to be here.', 'warn'],
+  'format':    () => ['WARNING: All data on drive C: will be deleted.', 'Are you sure you want to format? (Y/N)', '', '...', 'Just kidding. We did not format anything.', 'Your files are safe. Mostly.', 'warn'],
+  'shutdown':  () => { setTimeout(fakeBsod, 1000); return ['Shutting down...', 'warn']; },
+  'cls':       (tb) => { tb.querySelectorAll('.term-line').forEach(l => l.remove()); return []; },
+  'date':      () => { const d = new Date(); return [`Current date is: ${d.toDateString()}`, '', `You have been alive for approximately ${Math.floor((Date.now() - new Date('2000-01-01')) / 86400000)} days since the year 2000.`, `That is a lot of days.`, 'ok']; },
+  'hack':      () => ['Initiating hack...', '████████████░░░░░ 75%', '...', 'Access denied.', '', 'You need a hoodie and at least two screens to hack. Please try again.', 'err'],
+  'cd':        () => ['Access denied. You cannot go deeper.', 'err'],
+  'del':       () => ['Cannot delete. This file has attached itself to you emotionally.', 'err'],
+  'exit':      () => ['exit is not available. You are here now.', 'err'],
+};
+
+function handleTermCmd(tb, cmd) {
+  const key = cmd.split(' ')[0];
+  const handler = termCmds[key];
+  if (handler) {
+    const result = handler(tb);
+    if (!result || result.length === 0) return;
+    const cls = result[result.length - 1];
+    const validCls = ['ok','err','warn','cmd'];
+    const lines = validCls.includes(cls) ? result.slice(0, -1) : result;
+    const lineClass = validCls.includes(cls) ? cls : '';
+    lines.forEach(l => addTermLine(tb, l, lineClass));
+  } else {
+    addTermLine(tb, `'${key}' is not recognized as an internal or external command.`, 'err');
+    addTermLine(tb, `(We know what you were trying to do. It would not have worked anyway.)`, 'err');
+  }
+}
+
+function buildBrowser(body) {
+  body.style.padding = '0';
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;height:100%">
+      <div class="win-addr" style="margin:3px;">
+        <span class="addr-label">Address:</span>
+        <input class="addr-input" id="browser-addr" value="about:blank" />
+        <button style="padding:2px 8px;font-size:11px;cursor:pointer;" onclick="browserGo()">Go</button>
+      </div>
+      <div style="flex:1;background:#fff;border:1px inset #888;margin:0 3px 3px;overflow:auto;padding:12px;font-size:12px;" id="browser-content">
+        <div style="color:#666;text-align:center;margin-top:40px;">
+          <div style="font-size:24px">🌐</div>
+          <div style="margin-top:8px">Internet Explorer 6.0</div>
+          <div style="font-size:10px;color:#999;margin-top:4px">The browser your parents used to accidentally download 14 toolbars</div>
+        </div>
+      </div>
+    </div>
+  `;
+  const input = body.querySelector('#browser-addr');
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') browserGo(); });
+}
+
+const browserPages = {
+  'google.com':       '<h2>🔍 Google</h2><p style="color:#999;font-size:11px">The internet is unavailable in your area. Have you tried turning it off and on again?</p>',
+  'youtube.com':      '<h2>▶ YouTube</h2><p>This website requires Flash Player 7.0 or later.<br><br>Flash Player was discontinued in 2020.<br><br>We\'re sorry. So is Flash.</p>',
+  'facebook.com':     '<h2>📘 Facebook</h2><p>Your session has expired.<br><br>Your session has always been expired.<br><br>You were never logged in.</p>',
+  'scp-foundation.net':'<h2 style="color:darkred">⚠ SCP FOUNDATION — INTERNAL ACCESS</h2><hr><p><b>NOTICE:</b> Unauthorized access to this terminal has been logged.<br><br>Foundation personnel have been dispatched to your location.<br><br>Please remain calm. SCP-████ has been briefed.<br><br><span style="font-size:10px;color:#999">Your IP: [REDACTED] — Your location: [REDACTED] — Your thoughts: [PARTIALLY REDACTED]</span></p>',
+  'coolmathgames.com':'<h2>🎮 Cool Math Games</h2><p>This website has been blocked by your school, your employer, and somehow also your dentist.<br><br>Reason: <i>"You know what you did."</i></p>',
+  'myspace.com':      '<h2>🎵 MySpace</h2><p>Welcome back. Your profile is still here.<br><br>Tom is still your friend.<br><br>Tom has always been your friend.<br><br>Tom will always be your friend.</p>',
+  'amazon.com':       '<h2>📦 Amazon</h2><p>Your cart: 47 items.<br><br>Estimated delivery: 2-3 business years.<br><br>One of these items is something you added in 2019 and forgot about. We will not tell you which one.</p>',
+  'bing.com':         '<h2>🔍 Bing</h2><p>Bing has found 0 results for your query.<br><br>Bing would like to remind you that you could have just used Google.<br><br>Bing is aware.</p>',
+};
+
+function browserGo() {
+  let url = document.getElementById('browser-addr')?.value.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '');
+  const content = document.getElementById('browser-content');
+  if (!content) return;
+  const page = browserPages[url];
+  if (page) {
+    content.innerHTML = `<div style="font-family:Tahoma,sans-serif;font-size:12px;line-height:1.7">${page}</div>`;
+  } else {
+    content.innerHTML = `<div style="text-align:center;padding:40px;color:#999">
+      <div style="font-size:48px">🚫</div>
+      <h3 style="color:#c00;margin:12px 0">Internet Explorer cannot display the webpage</h3>
+      <p style="font-size:11px">The website <b>${url}</b> could not be found.<br><br>
+      Try: checking the address, refreshing the page, or accepting that some things on the internet simply do not want to be found.<br><br>
+      <span style="color:#aaa;font-size:10px">Error: 404 — Also, your homepage was changed to a toolbar again.</span></p>
+    </div>`;
+  }
+}
+
+function buildRecycle(body) {
+  body.style.padding = '0';
+  body.innerHTML = `
+    <div style="padding:6px;border-bottom:1px solid #ccc;font-size:11px;color:#666">
+      Recycle Bin contains 847 items occupying 4.7 GB. Most of them deserve to be here.
+    </div>
+    <div style="overflow:auto;flex:1">
+      <div class="recycle-item">🖼️ photo_of_ex.jpg &nbsp;<span style="color:#999;font-size:10px">— Deleted 847 times. Keeps coming back.</span></div>
+      <div class="recycle-item">📄 apology_letter_draft_7.doc &nbsp;<span style="color:#999;font-size:10px">— Never sent.</span></div>
+      <div class="recycle-item">📄 budget_2022.xlsx &nbsp;<span style="color:#999;font-size:10px">— You don't want to know.</span></div>
+      <div class="recycle-item">🎵 breakup_playlist.m3u &nbsp;<span style="color:#999;font-size:10px">— 94 songs. 0 skips.</span></div>
+      <div class="recycle-item">📄 novel_chapter1.doc &nbsp;<span style="color:#999;font-size:10px">— 3 words. Deleted in 2018.</span></div>
+      <div class="recycle-item">📄 gym_schedule.xlsx &nbsp;<span style="color:#999;font-size:10px">— Never opened.</span></div>
+      <div class="recycle-item">📄 things_i_regret.txt &nbsp;<span style="color:#999;font-size:10px">— 4.2 MB. Growing.</span></div>
+      <div class="recycle-item">📁 Old Relationship &nbsp;<span style="color:#999;font-size:10px">— Cannot be permanently deleted. OS limitation.</span></div>
+      <div class="recycle-item">🖼️ selfie_for_tinder.jpg &nbsp;<span style="color:#999;font-size:10px">— Taken in 2020. Never used. For the best.</span></div>
+      <div class="recycle-item">📄 resignation_letter.doc &nbsp;<span style="color:#999;font-size:10px">— Written. Revised 12 times. Not sent.</span></div>
+    </div>
+  `;
+}
+
+function buildPaint(body) {
+  body.style.padding = '0';
+  body.style.background = '#808080';
+  body.innerHTML = `
+    <div class="paint-toolbar">
+      <button class="paint-tool active" id="pt-pen" onclick="setPaintTool('pen')">✏️ Pencil</button>
+      <button class="paint-tool" id="pt-fill" onclick="showError('Fill tool cannot be used. There are some things you cannot fill.')">🪣 Fill</button>
+      <button class="paint-tool" id="pt-erase" onclick="setPaintTool('erase')">🧹 Eraser</button>
+      <button class="paint-tool" onclick="clearPaint()">🗑️ Clear</button>
+      <span style="margin-left:8px;font-size:11px">Color:</span>
+      <input type="color" id="paint-color" value="#000000" style="width:28px;height:22px;cursor:pointer;border:1px solid #999" />
+      <span style="margin-left:8px;font-size:11px">Size:</span>
+      <input type="range" id="paint-size" min="1" max="20" value="3" style="width:60px" />
+    </div>
+    <div class="paint-canvas-wrap">
+      <canvas id="paint-canvas" width="480" height="320"></canvas>
+    </div>
+  `;
+  setupPaint();
+}
+
+let paintTool = 'pen', painting = false, lastX = 0, lastY = 0;
+function setupPaint() {
+  const canvas = document.getElementById('paint-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  canvas.addEventListener('mousedown', e => {
+    painting = true;
+    const r = canvas.getBoundingClientRect();
+    lastX = e.clientX - r.left; lastY = e.clientY - r.top;
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!painting) return;
+    const r = canvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const size = parseInt(document.getElementById('paint-size')?.value || 3);
+    const color = document.getElementById('paint-color')?.value || '#000';
+    ctx.lineWidth = size;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = paintTool === 'erase' ? '#fff' : color;
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+    lastX = x; lastY = y;
+  });
+  canvas.addEventListener('mouseup', () => painting = false);
+  canvas.addEventListener('mouseleave', () => painting = false);
+}
+function setPaintTool(t) {
+  paintTool = t;
+  document.querySelectorAll('.paint-tool').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('pt-' + t);
+  if (btn) btn.classList.add('active');
+}
+function clearPaint() {
+  const canvas = document.getElementById('paint-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function buildSecret(body) {
+  body.style.padding = '12px';
+  body.innerHTML = `
+    <div style="font-family:'Courier New',monospace;font-size:12px;line-height:1.8;color:#800000">
+      <p><b>CLASSIFIED — LEVEL 5 CLEARANCE REQUIRED</b></p>
+      <br>
+      <p>If you are reading this, you have opened a file you were specifically told not to open.</p>
+      <br>
+      <p>Content of this folder:</p>
+      <br>
+      <p>📄 the_truth.txt — <span style="background:#000;color:#000;cursor:pointer" onclick="this.style.color='#800000'">Your browser history from 2014. We have it. We have always had it.</span></p>
+      <br>
+      <p>📄 personnel_file_YOU.doc — Subject has opened this folder 1 time(s). Subject was warned. Subject did not listen. Subject is exactly the kind of person we expected.</p>
+      <br>
+      <p>📄 DO_NOT_READ_THIS_EITHER.txt — <i>[This file is currently reading you back.]</i></p>
+      <br>
+      <p style="color:#999;font-size:10px">This incident has been logged. No action will be taken. We just want you to know that we know.</p>
+    </div>
+  `;
+}
+
+function buildProperties(body) {
+  body.style.padding = '12px';
+  body.innerHTML = `
+    <div style="font-size:12px;line-height:1.8">
+      <b>Desktop Properties</b><br><br>
+      <table style="border-collapse:collapse;width:100%;font-size:11px">
+        <tr><td style="padding:3px 8px;color:#666">OS Version:</td><td>Windows XP (Slightly Off Edition)</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">Build:</td><td>5.1.2600 — (trust us)</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">Registered to:</td><td>User (we think)</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">RAM:</td><td>256 MB (128 MB is being used by something we can't identify)</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">CPU:</td><td>Intel Pentium 4, 2.4 GHz — trying its best</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">Uptime:</td><td id="prop-uptime">calculating...</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">Processes:</td><td>47 running (3 unknown)</td></tr>
+        <tr><td style="padding:3px 8px;color:#666">Disk Space:</td><td>120 GB total, 119.6 GB used — what is all of this</td></tr>
+      </table>
+    </div>
+  `;
+  const start = Date.now();
+  const iv = setInterval(() => {
+    const el = document.getElementById('prop-uptime');
+    if (!el) { clearInterval(iv); return; }
+    const s = Math.floor((Date.now() - start) / 1000);
+    el.textContent = `${Math.floor(s/60)}m ${s%60}s (longer than expected)`;
+  }, 1000);
+}
+
+// ── ERROR DIALOG ──
+let dialogZ = 200;
+function showError(msg) {
+  const icons = ['⚠️','❌','ℹ️','🚫','💀'];
+  const titles = [
+    'Error', 'Windows Error', 'Critical Error', 'Unexpected Error',
+    'This Should Not Have Happened', 'A Problem Has Occurred',
+    'Error (Unknown Error)', 'Please Don\'t Panic'
+  ];
+  const d = document.createElement('div');
+  d.className = 'dialog';
+  d.style.zIndex = ++dialogZ;
+  d.style.left = (Math.random() * 200 + 200) + 'px';
+  d.style.top  = (Math.random() * 100 + 150) + 'px';
+  const title = titles[Math.floor(Math.random() * titles.length)];
+  const icon = icons[Math.floor(Math.random() * icons.length)];
+  d.innerHTML = `
+    <div class="win-title" onmousedown="startDialogDrag(event,this.parentElement)">
+      <span class="wt-icon">⚠️</span>
+      <span class="wt-label">${title}</span>
+      <div class="wt-btns"><button class="wt-btn wt-cls" onclick="this.closest('.dialog').remove()">✕</button></div>
+    </div>
+    <div class="dialog-body">
+      <div class="dialog-icon">${icon}</div>
+      <div class="dialog-text">${msg.replace(/\n/g,'<br>')}</div>
+    </div>
+    <div class="dialog-btns">
+      <button class="dialog-btn" onclick="this.closest('.dialog').remove()">OK</button>
+      <button class="dialog-btn" onclick="showError('Clicking Cancel has been disabled to prevent you from avoiding your problems.')">Cancel</button>
+    </div>
+  `;
+  document.body.appendChild(d);
+}
+
+function startDialogDrag(e, el) {
+  let ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
+  function move(e) { el.style.left = (e.clientX-ox)+'px'; el.style.top = (e.clientY-oy)+'px'; }
+  function up() { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+}
+
+// ── BSOD ──
+function fakeBsod() {
+  const msgs = [
+    'IRQL_NOT_LESS_OR_EQUAL\n\nYour computer has decided it has had enough for today.',
+    'UNEXPECTED_KERNEL_MODE_TRAP\n\nSomething unexpected happened. You seem surprised. You should not be.',
+    'PAGE_FAULT_IN_NONPAGED_AREA\n\nWindows tried to access a memory location that does not want to be accessed.',
+    'SYSTEM_SERVICE_EXCEPTION\n\nAn exception was thrown. We have been throwing them for years and nobody has caught one yet.',
+  ];
+  const codes = ['0x0000007E', '0x000000D1', '0x00000050', '0x0000003B'];
+  document.getElementById('bsod-msg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('bsod-code').textContent = '*** STOP: ' + codes[Math.floor(Math.random()*codes.length)];
+  document.getElementById('bsod').style.display = 'block';
+  document.getElementById('bsod').onclick = () => {
+    document.getElementById('bsod').style.display = 'none';
+    showError('Windows has recovered from an unexpected shutdown.\n\nWindows is not sure what happened.\nWindows is not sure it wants to know.\nWindows is fine. Everything is fine.');
+  };
+}
+</script>
+</body>
+</html>
