@@ -181,14 +181,14 @@ let lastTick = Date.now();
 
 // Each item: bought = how many owned, flat effect per purchase
 const ITEMS = [
-  { id:'cpu',     icon:'🔲', name:'CPU OVERCLOCK',   desc:'+2 H/s per click. Runs a bit hot.',         cost:0.0003, clickHash:2,  passiveHash:0,   heatPerClick:1,  heatRegen:0,   power:10,   efficiency:0 },
-  { id:'fan',     icon:'🌀', name:'CASE FANS',        desc:'Reduces heat buildup significantly.',        cost:0.0006, clickHash:0,  passiveHash:0,   heatPerClick:-2, heatRegen:0,   power:5,    efficiency:0 },
-  { id:'gpu',     icon:'🖥️', name:'GPU',              desc:'+30 H/s passive mining.',                   cost:0.002,  clickHash:0,  passiveHash:30,  heatPerClick:0,  heatRegen:1,   power:80,   efficiency:0 },
-  { id:'cooling', icon:'❄️', name:'LIQUID COOLING',   desc:'Big heat reduction. Worth it.',              cost:0.004,  clickHash:0,  passiveHash:0,   heatPerClick:-4, heatRegen:-2,  power:20,   efficiency:0 },
-  { id:'psu',     icon:'🔋', name:'BETTER PSU',       desc:'+15% efficiency on all mining.',             cost:0.006,  clickHash:0,  passiveHash:0,   heatPerClick:0,  heatRegen:0,   power:0,    efficiency:0.15 },
-  { id:'asic',    icon:'⚡', name:'ASIC MINER',       desc:'+400 H/s passive. The real deal.',           cost:0.02,   clickHash:0,  passiveHash:400, heatPerClick:0,  heatRegen:4,   power:300,  efficiency:0 },
-  { id:'farm',    icon:'🏭', name:'MINING FARM',      desc:'+3000 H/s passive. You made it.',            cost:0.15,   clickHash:0,  passiveHash:3000,heatPerClick:0,  heatRegen:10,  power:2000, efficiency:0 },
-  { id:'quantum', icon:'🔬', name:'QUANTUM RIG',      desc:'+40000 H/s. Probably illegal.',              cost:1.2,    clickHash:0,  passiveHash:40000,heatPerClick:0, heatRegen:25,  power:9999, efficiency:0 },
+  { id:'cpu',     icon:'🔲', name:'CPU OVERCLOCK',   desc:'+2 H/s per click. Runs a bit hot.',         cost:0.000005, clickHash:2,  passiveHash:0,    heatPerClick:1,  heatRegen:0,   power:10,   efficiency:0 },
+  { id:'fan',     icon:'🌀', name:'CASE FANS',        desc:'Reduces heat buildup significantly.',        cost:0.00001,  clickHash:0,  passiveHash:0,    heatPerClick:-2, heatRegen:0,   power:5,    efficiency:0 },
+  { id:'gpu',     icon:'🖥️', name:'GPU',              desc:'+30 H/s passive mining.',                   cost:0.00005,  clickHash:0,  passiveHash:30,   heatPerClick:0,  heatRegen:1,   power:80,   efficiency:0 },
+  { id:'cooling', icon:'❄️', name:'LIQUID COOLING',   desc:'Big heat reduction. Worth it.',              cost:0.0001,   clickHash:0,  passiveHash:0,    heatPerClick:-4, heatRegen:-2,  power:20,   efficiency:0 },
+  { id:'psu',     icon:'🔋', name:'BETTER PSU',       desc:'+15% efficiency on all mining.',             cost:0.0002,   clickHash:0,  passiveHash:0,    heatPerClick:0,  heatRegen:0,   power:0,    efficiency:0.15 },
+  { id:'asic',    icon:'⚡', name:'ASIC MINER',       desc:'+400 H/s passive. The real deal.',           cost:0.0008,   clickHash:0,  passiveHash:400,  heatPerClick:0,  heatRegen:4,   power:300,  efficiency:0 },
+  { id:'farm',    icon:'🏭', name:'MINING FARM',      desc:'+3000 H/s passive. You made it.',            cost:0.005,    clickHash:0,  passiveHash:3000, heatPerClick:0,  heatRegen:10,  power:2000, efficiency:0 },
+  { id:'quantum', icon:'🔬', name:'QUANTUM RIG',      desc:'+40000 H/s. Probably illegal.',              cost:0.04,     clickHash:0,  passiveHash:40000,heatPerClick:0,  heatRegen:25,  power:9999, efficiency:0 },
 ];
 
 // track how many of each bought
