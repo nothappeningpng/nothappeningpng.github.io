@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCP Database — Entry Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f2ed; --surface: #ede9e1; --surface2: #e4dfd5;
+      --border: rgba(60,50,30,0.25); --border-strong: rgba(60,50,30,0.5);
+      --text: #1a1612; --text-muted: #5a5248; --text-faint: #8a8278;
+      --accent: #2b4a7a; --accent-bg: #dce6f2; --accent-text: #1a3456;
+      --warning-bg: #fdf3d8; --warning-border: rgba(180,130,0,0.35); --warning-text: #7a5500;
+      --danger-bg: #fde8e8; --danger-border: rgba(160,40,40,0.3); --danger-text: #8b1a1a;
+      --safe-bg: #e8f5e8; --safe-border: rgba(40,120,40,0.3); --safe-text: #1a5c1a;
+      --radius: 8px; --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #13120f; --surface: #1c1a16; --surface2: #252219;
+        --border: rgba(200,190,160,0.15); --border-strong: rgba(200,190,160,0.35);
+        --text: #e8e4d8; --text-muted: #a09888; --text-faint: #6a6258;
+        --accent: #6a9fd8; --accent-bg: #0e1f36; --accent-text: #a8c8f0;
+        --warning-bg: #1f1800; --warning-border: rgba(200,150,0,0.3); --warning-text: #d4a020;
+        --danger-bg: #1f0a0a; --danger-border: rgba(200,60,60,0.3); --danger-text: #e06060;
+        --safe-bg: #0a1f0a; --safe-border: rgba(60,160,60,0.3); --safe-text: #60c060;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .wrapper { max-width: 780px; margin: 0 auto; }
+
+    /* HEADER */
+    .scp-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 2px solid var(--border-strong);
+    }
+    .doc-id { font-family: 'Special Elite', serif; font-size: 11px; color: var(--text-faint); letter-spacing: 3px; text-transform: uppercase; }
+    h1 { font-family: 'Special Elite', serif; font-size: 32px; font-weight: 400; letter-spacing: 3px; margin: 6px 0 4px; }
+    .subtitle { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+
+    /* GENERATE CONTROLS */
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .num-input {
+      width: 110px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .num-input:focus { border-color: var(--accent); }
+    .num-input::placeholder { color: var(--text-faint); font-size: 12px; letter-spacing: 1px; }
+
+    .class-select {
+      flex: 1;
+      min-width: 130px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      letter-spacing: 1px;
+    }
+
+    .gen-btn {
+      flex: 1;
+      padding: 10px 24px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: var(--text);
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .gen-btn:hover { background: var(--surface2); }
+    .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .random-btn {
+      padding: 10px 16px;
+      background: var(--accent-bg);
+      border: 0.5px solid var(--accent);
+      border-radius: var(--radius);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: var(--accent-text);
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .random-btn:hover { filter: brightness(1.1); }
+
+    /* ENTRY DISPLAY */
+    .entry { display: none; margin-top: 1.5rem; }
+    .entry.visible { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    .entry-header {
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      background: var(--surface);
+      padding: 1.25rem 1.5rem;
+      border-bottom: none;
+    }
+
+    .entry-number {
+      font-family: 'Special Elite', serif;
+      font-size: 28px;
+      letter-spacing: 4px;
+      color: var(--text);
+    }
+
+    .entry-name {
+      font-family: 'Special Elite', serif;
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing: 1px;
+    }
+
+    .class-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 14px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      font-family: 'Special Elite', serif;
+    }
+    .class-safe     { background: var(--safe-bg);    border: 0.5px solid var(--safe-border);    color: var(--safe-text); }
+    .class-euclid   { background: var(--warning-bg); border: 0.5px solid var(--warning-border); color: var(--warning-text); }
+    .class-keter    { background: var(--danger-bg);  border: 0.5px solid var(--danger-border);  color: var(--danger-text); }
+    .class-thaumiel { background: var(--accent-bg);  border: 0.5px solid var(--accent);         color: var(--accent-text); }
+    .class-neutralized { background: var(--surface2); border: 0.5px solid var(--border-strong); color: var(--text-faint); }
+
+    .entry-body {
+      border: 0.5px solid var(--border-strong);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      background: var(--surface);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .entry-section {}
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .section-content {
+      font-size: 13px;
+      line-height: 1.85;
+      color: var(--text);
+    }
+    .section-content p + p { margin-top: 0.75rem; }
+
+    /* SPECIAL NOTES BOX */
+    .addendum {
+      background: var(--surface2);
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+    .addendum-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .addendum-content {
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* LOADING */
+    .loading-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      border: 0.5px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      margin-top: 1.5rem;
+      display: none;
+    }
+    .loading-state.visible { display: block; }
+    .loading-spinner {
+      font-size: 28px;
+      animation: spin 1.5s linear infinite;
+      display: block;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ERROR */
+    .error-box {
+      background: var(--danger-bg);
+      border: 0.5px solid var(--danger-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      color: var(--danger-text);
+      font-size: 12px;
+      margin-top: 1.5rem;
+      display: none;
+      line-height: 1.6;
+    }
+    .error-box.visible { display: block; }
+
+    /* DIVIDER */
+    .divider {
+      height: 0.5px;
+      background: var(--border);
+      margin: 0.25rem 0;
+    }
+
+    /* HISTORY */
+    .history-section { margin-top: 3rem; }
+    .history-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      padding-bottom: 6px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .history-list { display: flex; flex-direction: column; gap: 6px; }
+    .history-item {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 12px;
+    }
+    .history-item:hover { background: var(--surface2); border-color: var(--border-strong); }
+    .history-num { font-family: 'Special Elite', serif; letter-spacing: 2px; color: var(--text); }
+    .history-name { color: var(--text-muted); font-size: 11px; }
+    .history-class { font-size: 10px; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="scp-header">
+    <div class="doc-id">SCP Foundation — Secure. Contain. Protect.</div>
+    <h1>SCP DATABASE</h1>
+    <div class="subtitle">Anomalous Entity Entry Generator — AI Assisted Documentation System v2.1</div>
+  </div>
+
+  <div class="controls">
+    <input class="num-input" id="scp-number" type="number" min="1" max="9999" placeholder="SCP #" />
+    <select class="class-select" id="scp-class">
+      <option value="random">// Class: Random</option>
+      <option value="Safe">Safe</option>
+      <option value="Euclid">Euclid</option>
+      <option value="Keter">Keter</option>
+      <option value="Thaumiel">Thaumiel</option>
+      <option value="Neutralized">Neutralized</option>
+    </select>
+    <button class="random-btn" onclick="randomGenerate()">🎲 Random</button>
+    <button class="gen-btn" id="gen-btn" onclick="generate()">Generate Entry →</button>
+  </div>
+
+  <div class="loading-state" id="loading">
+    <span class="loading-spinner">⚙</span>
+    <div class="loading-text">Retrieving classified document...</div>
+  </div>
+
+  <div class="error-box" id="error-box"></div>
+
+  <div class="entry" id="entry">
+    <div class="entry-header">
+      <div class="entry-number" id="e-number">SCP-XXXX</div>
+      <div class="entry-name" id="e-name">—</div>
+      <div class="class-badge" id="e-class-badge">Object Class: —</div>
+    </div>
+    <div class="entry-body">
+      <div class="entry-section">
+        <div class="section-title">// Special Containment Procedures</div>
+        <div class="section-content" id="e-containment"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="entry-section">
+        <div class="section-title">// Description</div>
+        <div class="section-content" id="e-description"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="entry-section">
+        <div class="section-title">// Incident / Addendum</div>
+        <div class="addendum">
+          <div class="addendum-label">Addendum — Researcher Notes</div>
+          <div class="addendum-content" id="e-addendum"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-section" id="history-section" style="display:none">
+    <div class="history-label">// Previously Generated Entries</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+</div>
+
+<script>
+  const GROQ_API_KEY = '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';
+  const CLASSES = ['Safe', 'Euclid', 'Keter', 'Thaumiel', 'Neutralized'];
+  const history = [];
+
+  function randomGenerate() {
+    const num = Math.floor(Math.random() * 6000) + 1;
+    document.getElementById('scp-number').value = num;
+    document.getElementById('scp-class').value = 'random';
+    generate();
+  }
+
+  document.getElementById('scp-number').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generate();
+  });
+
+  async function generate() {
+    let num = parseInt(document.getElementById('scp-number').value);
+    if (!num || num < 1) { num = Math.floor(Math.random() * 6000) + 1; document.getElementById('scp-number').value = num; }
+
+    let cls = document.getElementById('scp-class').value;
+    if (cls === 'random') cls = CLASSES[Math.floor(Math.random() * CLASSES.length)];
+
+    setLoading(true);
+    hideEntry();
+    hideError();
+
+    const prompt = `Generate a complete SCP Foundation database entry for SCP-${num}.
+Object Class: ${cls}
+
+The SCP should be creative, eerie, and written in the clinical SCP Foundation documentation style. Make the anomaly unique and interesting — it could be an object, entity, location, or phenomenon. Give it a memorable unofficial name.
+
+Respond ONLY with a valid JSON object, no markdown, no backticks, no extra text:
+{
+  "number": ${num},
+  "name": "The [Nickname]",
+  "object_class": "${cls}",
+  "containment": "2-3 sentences describing specific containment procedures in clinical SCP style",
+  "description": "3-4 sentences describing the anomaly in detail. Be specific and unsettling.",
+  "addendum": "1-2 sentences of researcher notes, an incident log excerpt, or a chilling final observation"
+}`;
+
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          max_tokens: 800,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || 'API error ' + res.status);
+      }
+
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content || '';
+      let entry;
+      try {
+        entry = JSON.parse(text.replace(/```json|```/g, '').trim());
+      } catch {
+        throw new Error('Failed to parse response. Try again.');
+      }
+
+      renderEntry(entry);
+      addToHistory(entry);
+    } catch (err) {
+      showError('Error: ' + err.message);
+    }
+
+    setLoading(false);
+  }
+
+  function renderEntry(e) {
+    document.getElementById('e-number').textContent = 'SCP-' + e.number;
+    document.getElementById('e-name').textContent = e.name || '—';
+
+    const badge = document.getElementById('e-class-badge');
+    badge.textContent = 'Object Class: ' + e.object_class;
+    badge.className = 'class-badge class-' + (e.object_class || '').toLowerCase();
+
+    document.getElementById('e-containment').innerHTML = formatText(e.containment);
+    document.getElementById('e-description').innerHTML = formatText(e.description);
+    document.getElementById('e-addendum').innerHTML = formatText(e.addendum);
+
+    document.getElementById('entry').classList.add('visible');
+  }
+
+  function formatText(text) {
+    if (!text) return '—';
+    return text.split('\n').filter(l => l.trim()).map(l => `<p>${l}</p>`).join('');
+  }
+
+  function addToHistory(entry) {
+    history.unshift(entry);
+    if (history.length > 8) history.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const section = document.getElementById('history-section');
+    const list = document.getElementById('history-list');
+    if (history.length <= 1) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    list.innerHTML = '';
+    history.slice(1).forEach(e => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <span class="history-num">SCP-${e.number}</span>
+        <span class="history-name">${e.name || ''}</span>
+        <span class="history-class class-${(e.object_class||'').toLowerCase()}" style="padding:2px 8px;border-radius:3px;font-size:10px;letter-spacing:1px;">${e.object_class}</span>
+      `;
+      item.onclick = () => { renderEntry(e); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+      list.appendChild(item);
+    });
+  }
+
+  function setLoading(on) {
+    document.getElementById('loading').classList.toggle('visible', on);
+    document.getElementById('gen-btn').disabled = on;
+  }
+  function hideEntry() { document.getElementById('entry').classList.remove('visible'); }
+  function hideError() { const e = document.getElementById('error-box'); e.classList.remove('visible'); e.textContent = ''; }
+  function showError(msg) { const e = document.getElementById('error-box'); e.textContent = msg; e.classList.add('visible'); }
+</script>
+</body>
+</html>
